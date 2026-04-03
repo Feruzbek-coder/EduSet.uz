@@ -494,100 +494,61 @@ def generate_pdf():
         if not exercise_ids:
             return jsonify({'error': 'Mashqlar tanlanmagan'}), 400
 
-        # PDF yaratish
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=A4,
                                leftMargin=5*mm, rightMargin=5*mm,
                                topMargin=5*mm, bottomMargin=5*mm)
-    
-    elements = []
-    styles = getSampleStyleSheet()
-    
-    # Cover page style
-    cover_title_style = ParagraphStyle(
-        'CoverTitle',
-        parent=styles['Heading1'],
-        fontSize=28,
-        textColor=colors.HexColor('#2c3e50'),
-        spaceAfter=15,
-        alignment=1,
-        fontName='Helvetica-Bold'
-    )
-    
-    # Exercise title style
-    title_style = ParagraphStyle(
-        'ExerciseTitle',
-        parent=styles['Heading1'],
-        fontSize=18,
-        textColor=colors.HexColor('#3498db'),
-        spaceAfter=15,
-        spaceBefore=10,
-        alignment=1,
-        fontName='Helvetica-Bold'
-    )
-    
-    # Subtitle style
-    subtitle_style = ParagraphStyle(
-        'Subtitle',
-        parent=styles['Normal'],
-        fontSize=12,
-        textColor=colors.HexColor('#7f8c8d'),
-        alignment=1,
-        spaceAfter=30
-    )
-    
-    # Question style
-    question_style = ParagraphStyle(
-        'Question',
-        parent=styles['Normal'],
-        fontSize=11,
-        spaceAfter=8,
-        fontName='Helvetica-Bold'
-    )
-    
-    # Answer style
-    answer_style = ParagraphStyle(
-        'Answer',
-        parent=styles['Normal'],
-        fontSize=10,
-        spaceAfter=5,
-        leftIndent=20
-    )
-    
-    def add_footer(canvas, doc):
-        canvas.saveState()
-        canvas.setFont('Helvetica', 9)
-        canvas.setFillColor(colors.HexColor('#888888'))
-        canvas.drawCentredString(A4[0] / 2, 8*mm, 'eduset.uz')
-        canvas.restoreState()
 
-    for i, ex_id in enumerate(exercise_ids):
-        exercise = db.get_exercise(ex_id)
-        if not exercise:
-            continue
-        
-        content = json.loads(exercise['content'])
-        
-        if exercise['type'] == 'word_search':
-            ws_opts = content.get('pdf_options', {})
-            elements.extend(generate_wordsearch_pdf(exercise, content, title_style, question_style, ws_opts))
-        elif exercise['type'] == 'matching':
-            elements.extend(generate_matching_pdf(exercise, content, title_style, question_style, answer_style))
-        elif exercise['type'] == 'fill_gaps':
-            elements.extend(generate_fillgaps_pdf(exercise, content, title_style, question_style, answer_style))
-        elif exercise['type'] == 'multiple_choice':
-            elements.extend(generate_multiplechoice_pdf(exercise, content, title_style, question_style, answer_style))
-        elif exercise['type'] == 'crossword':
-            elements.extend(generate_crossword_pdf(exercise, content, title_style, question_style))
-        elif exercise['type'] == 'domino':
-            elements.extend(generate_domino_pdf(exercise, content))
-        elif exercise['type'] == 'find_pairings':
-            elements.extend(generate_find_pairings_pdf(exercise, content))
-        
-        # Add page break between exercises
-        if i < len(exercise_ids) - 1:
-            elements.append(PageBreak())
-    
+        elements = []
+        styles = getSampleStyleSheet()
+
+        title_style = ParagraphStyle(
+            'ExerciseTitle', parent=styles['Heading1'],
+            fontSize=18, textColor=colors.HexColor('#3498db'),
+            spaceAfter=15, spaceBefore=10, alignment=1, fontName='Helvetica-Bold'
+        )
+        question_style = ParagraphStyle(
+            'Question', parent=styles['Normal'],
+            fontSize=11, spaceAfter=8, fontName='Helvetica-Bold'
+        )
+        answer_style = ParagraphStyle(
+            'Answer', parent=styles['Normal'],
+            fontSize=10, spaceAfter=5, leftIndent=20
+        )
+
+        def add_footer(canvas, doc):
+            canvas.saveState()
+            canvas.setFont('Helvetica', 9)
+            canvas.setFillColor(colors.HexColor('#888888'))
+            canvas.drawCentredString(A4[0] / 2, 8*mm, 'eduset.uz')
+            canvas.restoreState()
+
+        for i, ex_id in enumerate(exercise_ids):
+            exercise = db.get_exercise(ex_id)
+            if not exercise:
+                continue
+
+            content = json.loads(exercise['content'])
+
+            if exercise['type'] == 'word_search':
+                ws_opts = content.get('pdf_options', {})
+                elements.extend(generate_wordsearch_pdf(exercise, content, title_style, question_style, ws_opts))
+            elif exercise['type'] == 'matching':
+                elements.extend(generate_matching_pdf(exercise, content, title_style, question_style, answer_style))
+            elif exercise['type'] == 'fill_gaps':
+                elements.extend(generate_fillgaps_pdf(exercise, content, title_style, question_style, answer_style))
+            elif exercise['type'] == 'multiple_choice':
+                elements.extend(generate_multiplechoice_pdf(exercise, content, title_style, question_style, answer_style))
+            elif exercise['type'] == 'crossword':
+                elements.extend(generate_crossword_pdf(exercise, content, title_style, question_style))
+            elif exercise['type'] == 'domino':
+                elements.extend(generate_domino_pdf(exercise, content))
+            elif exercise['type'] == 'find_pairings':
+                elements.extend(generate_find_pairings_pdf(exercise, content))
+
+            if i < len(exercise_ids) - 1:
+                elements.append(PageBreak())
+
         doc.build(elements, onFirstPage=add_footer, onLaterPages=add_footer)
         buffer.seek(0)
 
