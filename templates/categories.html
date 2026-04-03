@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ko'rgazma turlari – EduSet.uz</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include '_nav.html' %}
+    <div class="container">
+        <header>
+            <h1>📚 Ko'rgazma turlari</h1>
+        </header>
+
+        <div class="categories-grid">
+            <a href="/exercises/word_search" class="category-card">
+                <div class="category-icon">🔍</div>
+                <h3>So'z qidirish</h3>
+                <p>So'zlarni so'z-izlash jadvalidan topish</p>
+                <span class="category-count">{{ counts.word_search }} ta ko'rgazma</span>
+            </a>
+
+            <a href="/exercises/fill_gaps" class="category-card">
+                <div class="category-icon">✍️</div>
+                <h3>Bo'sh joylarni to'ldirish</h3>
+                <p>Bo'sh harflarni to'ldirish</p>
+                <span class="category-count">{{ counts.fill_gaps }} ta ko'rgazma</span>
+            </a>
+            
+            <a href="/exercises/matching" class="category-card">
+                <div class="category-icon">🔗</div>
+                <h3>Moslashtirish</h3>
+                <p>So'zlarni tarjimalari bilan moslashtirish</p>
+                <span class="category-count">{{ counts.matching }} ta ko'rgazma</span>
+            </a>
+            
+            <div class="category-card" style="opacity:0.5; cursor:default; position:relative;" onclick="alert('Crossword mashqi tez kunda tayyor bo\'ladi! ⏳')">
+                <div style="position:absolute;top:8px;right:8px;background:#e74c3c;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:bold;">Tez kunda</div>
+                <div class="category-icon">✚</div>
+                <h3>Krossvord</h3>
+                <p>Tez kunda tayyor bo'ladi ⏳</p>
+                <span class="category-count">{{ counts.crossword }} ta ko'rgazma</span>
+            </div>
+        </div>
+    </div>
+
+    {% include '_nav_js.html' %}
+    <script src="{{ url_for('static', filename='js/zoom.js') }}"></script>
+</body>
+</html>

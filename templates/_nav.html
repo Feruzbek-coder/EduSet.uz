@@ -1,0 +1,47 @@
+<nav class="top-nav">
+    <a href="/" class="nav-brand">📋 EduSet.uz</a>
+    <div class="nav-links">
+        <a href="/" class="nav-link {% if active_page == 'home' %}active{% endif %}">🏠 Bosh sahifa</a>
+        <a href="/admin" class="nav-link {% if active_page == 'admin' %}active{% endif %}">📋 Mening ko'rgazmalarim</a>
+        <a href="/public-exercises" class="nav-link {% if active_page == 'community' %}active{% endif %}">🌐 Barcha ko'rgazmalar</a>
+        <a href="/hujjatlar" class="nav-link {% if active_page == 'hujjatlar' %}active{% endif %}">📄 Hujjatlar</a>
+        <div class="nav-dropdown">
+            <a href="#" class="nav-link {% if active_page == 'fanlar' %}active{% endif %}" onclick="return false;">📚 Fanlar ▾</a>
+            <div class="nav-dropdown-menu">
+                <a href="/public-exercises?subject=Ingliz+tili">🇬🇧 Ingliz tili</a>
+                <a href="/public-exercises?subject=Matematika">📐 Matematika</a>
+                <a href="/public-exercises?subject=Ona+tili+va+adabiyot">📝 Ona tili va adabiyot</a>
+                <a href="/public-exercises?subject=Fizika">⚛️ Fizika</a>
+                <a href="/public-exercises?subject=Kimyo">🧪 Kimyo</a>
+                <a href="/public-exercises?subject=Biologiya">🌿 Biologiya</a>
+                <a href="/public-exercises?subject=Tarix">📜 Tarix</a>
+                <a href="/public-exercises?subject=Geografiya">🌍 Geografiya</a>
+                <a href="/public-exercises?subject=Informatika">💻 Informatika</a>
+                <a href="/public-exercises?subject=Musiqa">🎵 Musiqa</a>
+                <a href="/public-exercises?subject=Tasviriy+san%27at">🎨 Tasviriy san'at</a>
+                <a href="/public-exercises?subject=Jismoniy+tarbiya">⚽ Jismoniy tarbiya</a>
+                <a href="/public-exercises?subject=Boshqa">📦 Boshqa</a>
+            </div>
+        </div>
+    </div>
+    <div class="nav-actions">
+        <button class="user-menu-btn" onclick="openUserModal()">
+            <div class="user-avatar"><span id="nav-avatar-letter">?</span></div>
+            <span id="nav-username">...</span>
+        </button>
+    </div>
+</nav>
+
+<div id="user-modal">
+    <div class="modal-box">
+        <div style="font-size:2.2em; margin-bottom:10px;">👋</div>
+        <h2 id="user-modal-title" style="margin:0 0 8px; color:#1f2937;">Xush kelibsiz!</h2>
+        <p style="color:#6b7280; margin-bottom:18px; font-size:.9em; line-height:1.5;">
+            Ismingizni kiriting — shu nom orqali faqat siz o'z so'zlaringiz va ko'rgazmalaringizni ko'rasiz.
+        </p>
+        <input type="text" id="user-name-input" maxlength="50"
+               placeholder="Ismingiz (masalan: Aziz)"
+               onkeydown="if(event.key==='Enter') saveUserName()">
+        <button class="modal-btn" onclick="saveUserName()">✅ Tasdiqlash</button>
+    </div>
+</div>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ exercise.title }} – EduSet.uz</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ range(1, 999999) | random }}">
+    <style>
+        /* Harf input stillari */
+        .word-with-inputs {
+            display: inline-flex;
+            align-items: center;
+            font-size: 2em;
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+        
+        .char-display {
+            display: inline-block;
+            width: 30px;
+            text-align: center;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .char-input {
+            width: 30px !important;
+            height: 40px !important;
+            min-width: 30px !important;
+            max-width: 30px !important;
+            text-align: center !important;
+            font-size: 1em !important;
+            font-weight: bold !important;
+            border: none !important;
+            border-bottom: 3px solid #667eea !important;
+            background: #f8f8f8 !important;
+            margin: 0 2px !important;
+            padding: 5px !important;
+            outline: none !important;
+            text-transform: lowercase;
+        }
+        
+        .char-input:focus {
+            background: #e8e8ff !important;
+            border-bottom-color: #764ba2 !important;
+        }
+        
+        .word-gap-box {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #ddd;
+        }
+        
+        .words-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+    {% include '_nav.html' %}
+    <div class="container">
+        <header>
+            <h1>{{ exercise.title }}</h1>
+            <a href="/admin" class="btn btn-secondary">⬅️ Orqaga</a>
+        </header>
+
+        <div class="exercise-container" data-exercise-id="{{ exercise.id }}" data-exercise-type="{{ exercise.type }}">
+            <div id="exercise-content"></div>
+            
+            <div class="exercise-actions">
+                <button onclick="checkAnswers()" class="btn btn-success">✓ Tekshirish</button>
+                <button onclick="resetExercise()" class="btn btn-secondary">🔄 Qayta boshlash</button>
+            </div>
+
+            <div id="result-container" class="result-container" style="display: none;">
+                <h2>Natija</h2>
+                <div id="score-display"></div>
+                <div id="detailed-results"></div>
+            </div>
+        </div>
+    </div>
+
+    {% include '_nav_js.html' %}
+    <script>
+        const exerciseData = {{ exercise.content | safe }};
+    </script>
+    <script src="{{ url_for('static', filename='js/zoom.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/exercise.js') }}?v={{ range(1, 999999) | random }}"></script>
+</body>
+</html>

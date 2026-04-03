@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Ko'rgazma Yaratish – EduSet.uz</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ cache_version }}">
+</head>
+<body>
+    {% include '_nav.html' %}
+    <div class="container">
+        <header>
+            <h1>
+                {% if edit_mode %}
+                    ✏️ Ko'rgazma Tahrirlash
+                {% elif exercise_type == 'matching' %}
+                    🔗 Moslashtirish ko'rgazmasi yaratish
+                {% elif exercise_type == 'fill_gaps' %}
+                    ✍️ Bo'sh joylarni to'ldirish yaratish
+                {% elif exercise_type == 'word_search' %}
+                    🔍 So'z qidirish ko'rgazmasi yaratish
+                {% elif exercise_type == 'crossword' %}
+                    ✚ Krossvord ko'rgazmasi yaratish
+                {% elif exercise_type == 'domino' %}
+                    🁣 Domino kartochkalar yaratish
+                {% elif exercise_type == 'find_pairings' %}
+                    🃏 Juftliklarni topish yaratish
+                {% else %}
+                    ☑️ Ko'rgazma yaratish
+                {% endif %}
+            </h1>
+            <a href="{% if edit_mode %}/admin{% else %}/{% endif %}" class="btn btn-secondary">⬅️ {% if edit_mode %}Orqaga{% else %}Bosh sahifa{% endif %}</a>
+        </header>
+
+        <div class="create-form">
+            <div class="form-group">
+                <label for="title">Mashq nomi:</label>
+                <input type="text" id="title" placeholder="Masalan: Unit 1 - Vocabulary" required>
+            </div>
+
+            <div id="content-area">
+                {% if exercise_type == 'matching' %}
+                    <div class="matching-form">
+                        <h3>So'zlar va mos keladigan javoblarni kiriting:</h3>
+                        <div id="matching-items">
+                            <div class="matching-item">
+                                <input type="text" class="word-input" placeholder="So'z yoki ibora">
+                                <input type="text" class="match-input" placeholder="Mos javob">
+                                <button type="button" class="btn-remove" onclick="removeItem(this)">❌</button>
+                            </div>
+                        </div>
+                        <button type="button" onclick="addMatchingItem()" class="btn btn-secondary">➕ Qo'shish</button>
+                    </div>
+
+                {% elif exercise_type == 'fill_gaps' %}
+                    <!-- UPDATED VERSION -->
+                    <div class="fillgaps-form">
+                        <h3>So'zlarni kiriting (tushirilgan harflar o'rniga _ belgisini qo'ying):</h3>
+                        <p style="color: #666; margin-bottom: 15px;">Masalan: h__ney, ap__e, t__le</p>
+                        <div id="words-container">
+                            <div class="word-gap-item">
+                                <input type="text" class="word-with-gaps" placeholder="Masalan: h__ney" />
+                                <input type="text" class="word-answer" placeholder="To'g'ri javob: honey" />
+                                <button type="button" class="btn-remove" onclick="removeWordItem(this)">❌</button>
+                            </div>
+                        </div>
+                        <button type="button" onclick="addWordGapItem()" class="btn btn-secondary">➕ So'z qo'shish</button>
+                    </div>
+
+                {% elif exercise_type == 'word_search' %}
+                    <div class="wordsearch-form">
+                        <h3>Qidiriladigan so'zlar va mos javoblarini kiriting:</h3>
+                        <div style="display:flex; gap:8px; margin-bottom:6px; padding: 0 28px 0 0;">
+                            <div style="flex:1; font-weight:700; color:#374151; font-size:.88em; padding:0 4px;">Mashq uchun so'zlarni kiriting</div>
+                            <div style="flex:1; font-weight:700; color:#374151; font-size:.88em; padding:0 4px;">Mos javob <span style="font-weight:400; color:#6b7280;">(tarjima, sinonim yoki so'zni qayta kiriting)</span></div>
+                        </div>
+                        <div id="wordsearch-words">
+                            <div class="wordsearch-word-item">
+                                <input type="text" class="ws-word-input" placeholder="Inglizcha so'z" />
+                                <input type="text" class="ws-translation-input" placeholder="O'zbekcha tarjima" />
+                                <button type="button" class="btn-remove" onclick="removeWSWord(this)">❌</button>
+                            </div>
+                            <div class="wordsearch-word-item">
+                                <input type="text" class="ws-word-input" placeholder="Inglizcha so'z" />
+                                <input type="text" class="ws-translation-input" placeholder="O'zbekcha tarjima" />
+                                <button type="button" class="btn-remove" onclick="removeWSWord(this)">❌</button>
+                            </div>
+                            <div class="wordsearch-word-item">
+                                <input type="text" class="ws-word-input" placeholder="Inglizcha so'z" />
+                                <input type="text" class="ws-translation-input" placeholder="O'zbekcha tarjima" />
+                                <button type="button" class="btn-remove" onclick="removeWSWord(this)">❌</button>
+                            </div>
+                            <div class="wordsearch-word-item">
+                                <input type="text" class="ws-word-input" placeholder="Inglizcha so'z" />
+                                <input type="text" class="ws-translation-input" placeholder="O'zbekcha tarjima" />
+                                <button type="button" class="btn-remove" onclick="removeWSWord(this)">❌</button>
+                            </div>
+                            <div class="wordsearch-word-item">
+                                <input type="text" class="ws-word-input" placeholder="Inglizcha so'z" />
+                                <input type="text" class="ws-translation-input" placeholder="O'zbekcha tarjima" />
+                                <button type="button" class="btn-remove" onclick="removeWSWord(this)">❌</button>
+                            </div>
+                        </div>
+                        <button type="button" onclick="addWSWord()" class="btn btn-secondary">➕ So'z qo'shish</button>
+                        <div class="grid-size-option" style="margin-top: 15px;">
+                            <label>Jadval o'lchami: </label>
+                            <select id="grid-size">
+                                <option value="10">10x10</option>
+                                <option value="12">12x12</option>
+                                <option value="15" selected>15x15</option>
+                                <option value="18">18x18</option>
+                                <option value="20">20x20</option>
+                            </select>
+                        </div>
+                        <div class="grid-size-option" style="margin-top: 12px;">
+                            <label>Jadval chegara rangi (PDF): </label>
+                            <input type="color" id="ws-border-color" value="#e0e0e0" style="width:48px;height:28px;vertical-align:middle;cursor:pointer;">
+                            <span style="font-size:.85em;color:#666;margin-left:6px;">Hujayra chegarasi rangi</span>
+                        </div>
+                        <div class="grid-size-option" style="margin-top: 12px;">
+                            <label>So'zlar ro'yxati shrifti (PDF): </label>
+                            <select id="ws-word-font">
+                                <option value="cambria">Cambria Bold Italic</option>
+                                <option value="times">Times New Roman Bold Italic</option>
+                                <option value="helvetica">Helvetica Bold Oblique</option>
+                                <option value="courier">Courier Bold</option>
+                            </select>
+                        </div>
+                        <div class="grid-size-option" style="margin-top: 10px;">
+                            <label>Jadval harflari shrifti (PDF): </label>
+                            <select id="ws-grid-font">
+                                <option value="sitka">Sitka Semibold</option>
+                                <option value="times">Times New Roman Bold</option>
+                                <option value="helvetica">Helvetica Bold</option>
+                                <option value="courier">Courier Bold</option>
+                            </select>
+                        </div>
+                    </div>
+
+                {% elif exercise_type == 'crossword' %}
+                    <div class="crossword-form" style="text-align:center; padding: 40px 20px;">
+                        <div style="font-size: 60px; margin-bottom: 15px;">⏳</div>
+                        <h3 style="color: #e74c3c;">Crossword mashqi tez kunda tayyor bo'ladi!</h3>
+                        <p style="color: #666; margin-top: 10px;">Hozirda ishlab chiqilmoqda. Iltimos, boshqa mashq turlaridan foydalaning.</p>
+                        <a href="/create" class="btn btn-secondary" style="margin-top: 20px; display: inline-block;">← Ortga qaytish</a>
+                    </div>
+
+                {% elif exercise_type == 'domino' %}
+                    <div class="domino-form" style="text-align:center; padding: 40px 20px;">
+                        <div style="font-size: 60px; margin-bottom: 15px;">⏳</div>
+                        <h3 style="color: #e67e22;">Domino mashqi tez kunda tayyor bo'ladi!</h3>
+                        <p style="color: #666; margin-top: 10px;">Hozirda ishlab chiqilmoqda. Iltimos, boshqa mashq turlaridan foydalaning.</p>
+                        <a href="/create" class="btn btn-secondary" style="margin-top: 20px; display: inline-block;">← Ortga qaytish</a>
+                    </div>
+                {% elif exercise_type == 'crossword' %}
+                    <div class="crossword-form" style="text-align:center; padding: 40px 20px;">
+                        <div style="font-size: 60px; margin-bottom: 15px;">⏳</div>
+                        <h3 style="color: #e74c3c;">Crossword mashqi tez kunda tayyor bo'ladi!</h3>
+                        <p style="color: #666; margin-top: 10px;">Hozirda ishlab chiqilmoqda.</p>
+                    </div>
+                {% elif exercise_type == 'find_pairings' %}
+                    <div class="find-pairings-form" style="text-align:center; padding: 40px 20px;">
+                        <div style="font-size: 60px; margin-bottom: 15px;">⏳</div>
+                        <h3 style="color: #16a085;">Juftliklarni topish mashqi tez kunda tayyor bo'ladi!</h3>
+                        <p style="color: #666; margin-top: 10px;">Hozirda ishlab chiqilmoqda. Iltimos, boshqa mashq turlaridan foydalaning.</p>
+                        <a href="/create" class="btn btn-secondary" style="margin-top: 20px; display: inline-block;">← Ortga qaytish</a>
+                    </div>
+                {% endif %}
+            </div>
+                <div class="grade-subject-row" style="display:flex; gap:16px; margin:18px 0 12px 0;">
+                    <div style="flex:1;">
+                        <label style="font-weight:600; display:block; margin-bottom:4px;">Sinf / Yosh guruhi:</label>
+                        <select id="ex-grade" style="width:100%; padding:8px 10px; border:1px solid #ccc; border-radius:6px; font-size:.95em;">
+                            <option value="">— Tanlanmagan —</option>
+                            <option value="1-sinf">1-sinf</option>
+                            <option value="2-sinf">2-sinf</option>
+                            <option value="3-sinf">3-sinf</option>
+                            <option value="4-sinf">4-sinf</option>
+                            <option value="5-sinf">5-sinf</option>
+                            <option value="6-sinf">6-sinf</option>
+                            <option value="7-sinf">7-sinf</option>
+                            <option value="8-sinf">8-sinf</option>
+                            <option value="9-sinf">9-sinf</option>
+                            <option value="10-sinf">10-sinf</option>
+                            <option value="11-sinf">11-sinf</option>
+                            <option value="Litsey/Kollej">Litsey/Kollej</option>
+                            <option value="Oliy ta'lim">Oliy ta'lim</option>
+                            <option value="Maktabgacha">Maktabgacha</option>
+                            <option value="Boshqa">Boshqa</option>
+                        </select>
+                    </div>
+                    <div style="flex:1;">
+                        <label style="font-weight:600; display:block; margin-bottom:4px;">Fan:</label>
+                        <select id="ex-subject" style="width:100%; padding:8px 10px; border:1px solid #ccc; border-radius:6px; font-size:.95em;">
+                            <option value="">— Tanlanmagan —</option>
+                            <option value="Ingliz tili">Ingliz tili</option>
+                            <option value="O'zbek tili">O'zbek tili</option>
+                            <option value="Matematika">Matematika</option>
+                            <option value="Ona tili va adabiyot">Ona tili va adabiyot</option>
+                            <option value="Fizika">Fizika</option>
+                            <option value="Kimyo">Kimyo</option>
+                            <option value="Biologiya">Biologiya</option>
+                            <option value="Tarix">Tarix</option>
+                            <option value="Geografiya">Geografiya</option>
+                            <option value="Informatika">Informatika</option>
+                            <option value="Musiqa">Musiqa</option>
+                            <option value="Tasviriy san'at">Tasviriy san'at</option>
+                            <option value="Jismoniy tarbiya">Jismoniy tarbiya</option>
+                            <option value="Boshqa">Boshqa</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="saveExercise()" class="btn btn-success">💾 Saqlash</button>
+                <a href="/" class="btn btn-secondary">❌ Bekor qilish</a>
+            </div>
+        </div>
+    </div>
+
+    {% include '_nav_js.html' %}
+    <script>
+        const exerciseType = '{{ exercise_type }}';
+        const editMode = {{ 'true' if edit_mode else 'false' }};
+        const editExerciseId = {{ exercise.id if edit_mode and exercise else 'null' }};
+        const editExerciseData = {{ exercise.content|safe if edit_mode and exercise else 'null' }};
+        const editExerciseTitle = '{{ exercise.title if edit_mode and exercise else "" }}';
+        const vocabularyData = {{ vocabulary|tojson if vocabulary else 'null' }};
+    </script>
+    <script src="{{ url_for('static', filename='js/zoom.js') }}?v={{ cache_version }}"></script>
+    <script src="{{ url_for('static', filename='js/create.js') }}?v={{ cache_version }}"></script>
+</body>
+</html>

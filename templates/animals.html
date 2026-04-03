@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hayvonlar Rasmlari</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ cache_version }}">
+    <style>
+        .animals-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .animals-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+        }
+
+        .animals-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5em;
+        }
+
+        .animals-header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .animals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .animal-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 3px solid #f0f0f0;
+        }
+
+        .animal-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.2);
+            border-color: #667eea;
+        }
+
+        .animal-image {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .animal-image svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .animal-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .animal-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .animal-name-uz {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 10px;
+            padding: 10px;
+            border: 2px dashed #111;
+            border-radius: 12px;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin: 20px 0;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: #5568d3;
+            transform: translateX(-5px);
+        }
+
+        .download-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            color: #1565c0;
+        }
+
+        @media print {
+            .back-button, .animals-header, .download-info {
+                display: none;
+            }
+            .animal-card {
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="animals-container">
+        <a href="/" class="back-button">← Bosh sahifaga qaytish</a>
+        
+        <div class="animals-header">
+            <h1>🐾 Hayvonlar Rasmlari</h1>
+            <p>Ko'rgazmalar uchun multfilm uslubidagi hayvonlar</p>
+        </div>
+
+        <div class="download-info">
+            💡 Rasmni saqlash uchun uning ustiga o'ng tugma bosing va "Save image as..." ni tanlang
+        </div>
+
+        <div class="animals-grid">
+            <div class="animal-card">
+                <div class="animal-image">
+                    <img src="{{ url_for('static', filename='images/animals/dog.png') }}" alt="Dog">
+                </div>
+                <div class="animal-name">Dog</div>
+                <div class="animal-name-uz">It</div>
+            </div>
+
+            <div class="animal-card">
+                <div class="animal-image">
+                    <img src="{{ url_for('static', filename='images/animals/cat.png') }}" alt="Cat">
+                </div>
+                <div class="animal-name">Cat</div>
+                <div class="animal-name-uz">Mushuk</div>
+            </div>
+        </div>
+
+        <div class="download-info" style="margin-top: 30px;">
+            🖨️ Barcha rasmlarni chop etish uchun sahifani print qiling (Ctrl+P)
+        </div>
+
+        <a href="/" class="back-button">← Bosh sahifaga qaytish</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF yuklab olish – EduSet.uz</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ cache_version }}">
+    <style>
+        .lesson-assistant-page {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .exercise-select-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .exercise-select-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .exercise-select-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+        
+        .exercise-select-card.selected {
+            border-color: #27ae60;
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        }
+        
+        .exercise-select-card .checkbox {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 24px;
+            height: 24px;
+            border: 2px solid #ccc;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            background: white;
+            pointer-events: none;
+            color: transparent;
+        }
+        
+        .exercise-select-card.selected .checkbox {
+            background: #27ae60;
+            border-color: #27ae60;
+            color: white;
+        }
+        
+        .exercise-select-card h4 {
+            margin: 0 0 8px 0;
+            color: #333;
+            padding-right: 30px;
+            pointer-events: none;
+        }
+        
+        .exercise-select-card .type-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            pointer-events: none;
+        }
+        
+        .type-badge.word_search {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .type-badge.matching {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        
+        .type-badge.fill_gaps {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .type-badge.multiple_choice {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .type-badge.crossword {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+        
+        .type-badge.find_pairings {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        
+        .pdf-actions {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .pdf-actions .selected-count {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .pdf-actions .btn-generate {
+            background: white;
+            color: #667eea;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: 700;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .pdf-actions .btn-generate:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .pdf-actions .btn-generate:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-tab {
+            padding: 10px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+        }
+        
+        .filter-tab:hover {
+            border-color: #667eea;
+        }
+        
+        .filter-tab.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .empty-message {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .select-all-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+        
+        /* PDF Preview Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            overflow: auto;
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            width: 95%;
+            height: 95vh;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            color: #333;
+        }
+        
+        .modal-close {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .modal-close:hover {
+            background: #c0392b;
+        }
+        
+        .modal-body {
+            flex: 1;
+            padding: 20px;
+            overflow: auto;
+        }
+        
+        .pdf-viewer {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .modal-footer {
+            padding: 20px;
+            border-top: 2px solid #e0e0e0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .btn-download {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .btn-download:hover {
+            background: #229954;
+        }
+    </style>
+</head>
+<body>
+    {% include '_nav.html' %}
+    <div class="container lesson-assistant-page">
+        <header>
+            <h1>🖨️ PDF ko'rgazma yuklab olish</h1>
+            <p class="subtitle">Ko'rgazmalarni tanlang va PDF formatda chop etish uchun yuklab oling</p>
+        </header>
+
+        <div class="filter-tabs">
+            <button class="filter-tab active" data-type="all">📋 Barchasi</button>
+            <button class="filter-tab" data-type="word_search">🔍 So'z qidirish</button>
+            <button class="filter-tab" data-type="matching">🔗 Moslashtirish</button>
+            <button class="filter-tab" data-type="fill_gaps">✍️ Bo'sh joylar</button>
+            <button class="filter-tab" data-type="crossword">✚ Krossvord</button>
+            <button class="filter-tab" data-type="find_pairings">🃏 Juftliklar</button>
+        </div>
+
+        <div class="select-all-row">
+            <label>
+                <input type="checkbox" id="select-all" onchange="toggleSelectAll()">
+                <span>Barchasini tanlash</span>
+            </label>
+            <span id="selected-info">0 ta tanlangan</span>
+        </div>
+
+        <div class="exercise-select-grid" id="exercises-grid">
+            {% if exercises %}
+                {% for exercise in exercises %}
+                <div class="exercise-select-card" 
+                     data-id="{{ exercise.id }}" 
+                     data-type="{{ exercise.type }}"
+                     onclick="toggleExercise(this)">
+                    <div class="checkbox">✓</div>
+                    <h4>{{ exercise.title }}</h4>
+                    <span class="type-badge {{ exercise.type }}">
+                        {% if exercise.type == 'word_search' %}🔍 So'z qidirish
+                        {% elif exercise.type == 'matching' %}🔗 Moslashtirish
+                        {% elif exercise.type == 'fill_gaps' %}✍️ Bo'sh joylar
+                        {% elif exercise.type == 'crossword' %}✚ Krossvord
+                        {% elif exercise.type == 'find_pairings' %}🃏 Juftliklar
+                        {% else %}{{ exercise.type }}{% endif %}
+                    </span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-message">
+                    <h3>📭 Ko'rgazma topilmadi</h3>
+                    <p>Avval ko'rgazma yarating</p>
+                    <a href="/" class="btn btn-primary">✨ Ko'rgazma yaratish</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="pdf-actions">
+            <span class="selected-count" id="selected-count">0 ta ko'rgazma tanlangan</span>
+            <div style="display: flex; gap: 15px;">
+                <button class="btn-generate" id="btn-preview" onclick="previewPDF()" disabled style="background: #3498db;">
+                    👁️ Ko'rib chiqish
+                </button>
+                <button class="btn-generate" id="btn-generate" onclick="generatePDF()" disabled>
+                    📄 PDF Yuklab Olish
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF Preview Modal -->
+    <div id="pdfModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📄 PDF Ko'rib chiqish</h2>
+                <button class="modal-close" onclick="closeModal()">✕ Yopish</button>
+            </div>
+            <div class="modal-body">
+                <iframe id="pdfViewer" class="pdf-viewer"></iframe>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-download" onclick="downloadPDFFromModal()">
+                    💾 Yuklab olish
+                </button>
+                <button class="modal-close" onclick="closeModal()">
+                    ✕ Yopish
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedExercises = new Set();
+        const exercisesData = {{ exercises | tojson }};
+        
+        function toggleExercise(card) {
+            const id = card.dataset.id;
+            
+            if (selectedExercises.has(id)) {
+                selectedExercises.delete(id);
+                card.classList.remove('selected');
+            } else {
+                selectedExercises.add(id);
+                card.classList.add('selected');
+            }
+            
+            updateSelectedCount();
+        }
+        
+        function toggleSelectAll() {
+            const checkbox = document.getElementById('select-all');
+            const visibleCards = document.querySelectorAll('.exercise-select-card:not([style*="display: none"])');
+            
+            visibleCards.forEach(card => {
+                const id = card.dataset.id;
+                if (checkbox.checked) {
+                    selectedExercises.add(id);
+                    card.classList.add('selected');
+                } else {
+                    selectedExercises.delete(id);
+                    card.classList.remove('selected');
+                }
+            });
+            
+            updateSelectedCount();
+        }
+        
+        function updateSelectedCount() {
+            const count = selectedExercises.size;
+            document.getElementById('selected-count').textContent = `${count} ta ko'rgazma tanlangan`;
+            document.getElementById('selected-info').textContent = `${count} ta tanlangan`;
+            document.getElementById('btn-generate').disabled = count === 0;
+            document.getElementById('btn-preview').disabled = count === 0;
+        }
+        
+        // Filter tabs
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                const type = this.dataset.type;
+                const cards = document.querySelectorAll('.exercise-select-card');
+                
+                cards.forEach(card => {
+                    if (type === 'all' || card.dataset.type === type) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+        
+        async function generatePDF() {
+            if (selectedExercises.size === 0) {
+                alert('Kamida bitta mashq tanlang!');
+                return;
+            }
+            
+            const btn = document.getElementById('btn-generate');
+            const originalText = btn.textContent;
+            btn.textContent = '⏳ Yaratilmoqda...';
+            btn.disabled = true;
+            
+            try {
+                const ids  = Array.from(selectedExercises).map(id => parseInt(id));
+                const opts = collectPdfOptions(ids);
+                const response = await fetch('/api/generate-pdf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ exercise_ids: ids, pdf_options: opts })
+                });
+                if (!response.ok) { alert('Xatolik yuz berdi!'); return; }
+                const blob = await response.blob();
+                const url  = URL.createObjectURL(blob);
+                const a    = document.createElement('a');
+                a.href = url; a.download = 'worksheets.pdf'; a.click();
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Xatolik yuz berdi!');
+            }
+            
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.disabled = selectedExercises.size === 0;
+            }, 2000);
+        }
+
+        // pdf_options ni tanlangan mashqlarning content ichidan yig'ish
+        function collectPdfOptions(ids) {
+            const opts = {};
+            // exercises massivi sahifada mavjud bo'lsa, undan word_search options'ni olamiz
+            if (typeof exercisesData !== 'undefined') {
+                for (const id of ids) {
+                    const ex = exercisesData.find(e => e.id === id);
+                    if (ex && ex.type === 'word_search') {
+                        try {
+                            const c = JSON.parse(ex.content);
+                            if (c.pdf_options) Object.assign(opts, c.pdf_options);
+                        } catch(e) {}
+                    }
+                }
+            }
+            return opts;
+        }
+        
+        let currentPDFBlob = null;
+        
+        async function previewPDF() {
+            if (selectedExercises.size === 0) {
+                alert('Kamida bitta mashq tanlang!');
+                return;
+            }
+            
+            const btn = document.getElementById('btn-preview');
+            const originalText = btn.textContent;
+            btn.textContent = '⏳ Yuklanmoqda...';
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/generate-pdf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        exercise_ids: Array.from(selectedExercises).map(id => parseInt(id))
+                    })
+                });
+                
+                if (response.ok) {
+                    currentPDFBlob = await response.blob();
+                    const url = window.URL.createObjectURL(currentPDFBlob);
+                    document.getElementById('pdfViewer').src = url;
+                    document.getElementById('pdfModal').classList.add('active');
+                } else {
+                    alert('PDF yaratishda xatolik yuz berdi!');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Xatolik yuz berdi!');
+            }
+            
+            btn.textContent = originalText;
+            btn.disabled = selectedExercises.size === 0;
+        }
+        
+        function closeModal() {
+            document.getElementById('pdfModal').classList.remove('active');
+            document.getElementById('pdfViewer').src = '';
+        }
+        
+        function downloadPDFFromModal() {
+            if (currentPDFBlob) {
+                const url = window.URL.createObjectURL(currentPDFBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'worksheets.pdf';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            }
+        }
+        
+        // ESC tugmasini bosish bilan modalni yopish
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+        
+        // Modal tashqarisiga bosish bilan yopish
+        document.getElementById('pdfModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });    </script>
+    {% include '_nav_js.html' %}
+    <script src="{{ url_for('static', filename='js/zoom.js') }}?v={{ cache_version }}"></script>
+</body>
+</html>

@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcha ko'rgazmalar – EduSet.uz</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ cache_version }}">
+    <style>
+        /* Page layout */
+        .pub-page { max-width: 1100px; margin: 0 auto; }
+
+        /* Header */
+        .pub-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 28px; flex-wrap: wrap; gap: 12px;
+        }
+        .pub-header h1 { margin: 0; color: #2c3e50; font-size: 2em; font-weight: 800; letter-spacing: -0.5px; }
+        .clear-filter-btn {
+            padding: 8px 18px; background: #e74c3c; color: #fff; border-radius: 20px;
+            font-size: .88em; font-weight: 700; text-decoration: none; transition: background .2s;
+        }
+        .clear-filter-btn:hover { background: #c0392b; }
+
+        /* Search */
+        .search-bar {
+            width: 100%; padding: 13px 18px; border: 2px solid #e0e0e0;
+            border-radius: 12px; font-size: 1.05em; margin-bottom: 18px;
+            outline: none; transition: border-color .2s; font-family: inherit;
+        }
+        .search-bar:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,.12); }
+
+        /* Filter buttons */
+        .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+        .filter-btn {
+            padding: 7px 16px; border-radius: 22px; border: 2px solid #e0e0e0;
+            background: #fff; cursor: pointer; font-size: .9em; font-weight: 700;
+            transition: all .2s; color: #555; font-family: inherit;
+        }
+        .filter-btn.active, .filter-btn:hover {
+            background: #667eea; border-color: #667eea; color: #fff;
+        }
+
+        /* Select-all row */
+        .select-all-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 14px; padding: 10px 16px;
+            background: #f5f6fa; border-radius: 10px; font-size: .98em; font-weight: 600;
+        }
+        .select-all-row label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        #selected-info { color: #667eea; font-weight: 700; }
+
+        /* Cards grid */
+        .pub-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        /* Card */
+        .pub-card {
+            background: white; border-radius: 14px; padding: 18px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,.07);
+            border: 2px solid #e8e8f0; transition: all .2s ease;
+            cursor: pointer; position: relative;
+        }
+        .pub-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 6px 22px rgba(102,126,234,.18);
+            transform: translateY(-2px);
+        }
+        .pub-card.selected {
+            border-color: #27ae60;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        }
+        .pub-card .card-checkbox {
+            position: absolute; top: 12px; right: 14px;
+            width: 26px; height: 26px; border: 2px solid #ccc; border-radius: 50%;
+            background: white; display: flex; align-items: center; justify-content: center;
+            font-size: 14px; color: transparent; pointer-events: none; transition: all .2s;
+        }
+        .pub-card.selected .card-checkbox {
+            background: #27ae60; border-color: #27ae60; color: white;
+        }
+        .pub-card h3 { margin: 0 36px 8px 0; color: #1a202c; font-size: 1.08em; font-weight: 700; line-height: 1.3; }
+        .pub-card-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+
+        /* Type badges */
+        .type-badge {
+            padding: 4px 11px; border-radius: 14px; font-size: .8em;
+            font-weight: 700; color: #fff;
+        }
+        .type-badge.word_search     { background: linear-gradient(135deg,#f39c12,#e67e22); }
+        .type-badge.fill_gaps       { background: linear-gradient(135deg,#27ae60,#1e8449); }
+        .type-badge.matching        { background: linear-gradient(135deg,#2980b9,#1a6fa0); }
+        .type-badge.multiple_choice { background: linear-gradient(135deg,#8e44ad,#7d3c98); }
+        .type-badge.crossword       { background: linear-gradient(135deg,#c0392b,#a93226); }
+        .type-badge.domino          { background: linear-gradient(135deg,#e67e22,#d35400); }
+        .type-badge.find_pairings   { background: linear-gradient(135deg,#16a085,#0e6655); }
+        .pub-date { color: #999; font-size: .82em; }
+        .pub-card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+        .tag-subject { background: #e3f2fd; color: #1565c0; padding: 3px 9px; border-radius: 10px; font-size: .78em; font-weight: 600; }
+        .tag-grade   { background: #f3e5f5; color: #6a1b9a; padding: 3px 9px; border-radius: 10px; font-size: .78em; font-weight: 600; }
+        .tag-empty   { opacity: 0.5; }
+
+        /* Card action buttons */
+        .pub-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+        .pub-actions .btn {
+            padding: 7px 15px; font-size: .88em; border-radius: 8px; font-weight: 700;
+            text-decoration: none; border: none; cursor: pointer; display: inline-block; transition: all .2s;
+        }
+        .pub-actions .btn-play  { background: #3498db; color: #fff; }
+        .pub-actions .btn-play:hover  { background: #2980b9; transform: translateY(-1px); }
+
+        /* PDF bottom bar */
+        .pdf-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 14px 24px;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 12px; z-index: 100;
+            box-shadow: 0 -4px 20px rgba(0,0,0,.25);
+        }
+        .pdf-bar .sel-count { color: white; font-size: 1.1em; font-weight: 700; }
+        .pdf-bar .bar-btns { display: flex; gap: 12px; }
+        .bar-btn {
+            padding: 11px 28px; border-radius: 28px; border: none; cursor: pointer;
+            font-size: 1em; font-weight: 700; transition: all .25s; font-family: inherit;
+        }
+        .bar-btn-preview { background: #3498db; color: #fff; }
+        .bar-btn-preview:hover:not(:disabled) { background: #2980b9; transform: scale(1.03); }
+        .bar-btn-download { background: white; color: #667eea; }
+        .bar-btn-download:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 4px 16px rgba(0,0,0,.25); }
+        .bar-btn:disabled { opacity: .45; cursor: not-allowed; transform: none !important; }
+
+        /* Bottom spacing so cards aren't hidden behind bar */
+        .pub-grid-wrap { padding-bottom: 90px; }
+
+        /* Empty state */
+        .empty-state { text-align: center; padding: 70px 20px; color: #7f8c8d; }
+        .empty-state-icon { font-size: 4em; margin-bottom: 18px; }
+        .empty-state h3 { font-size: 1.4em; margin-bottom: 10px; }
+
+        /* Canvas preview */
+        .ex-canvas-preview {
+            display: block; width: 100%; height: 108px;
+            border-radius: 8px; margin: 10px 0 8px;
+            border: 1px solid #eef0f5;
+            background: #f8f9fc;
+        }
+
+        /* PDF Preview Modal */
+        .pdf-modal {
+            display: none; position: fixed; z-index: 1000;
+            inset: 0; background: rgba(0,0,0,.8);
+            align-items: center; justify-content: center;
+        }
+        .pdf-modal.active { display: flex; }
+        .pdf-modal-content {
+            background: white; width: 95%; height: 95vh;
+            border-radius: 16px; display: flex; flex-direction: column;
+        }
+        .pdf-modal-header {
+            padding: 18px 22px; border-bottom: 2px solid #e0e0e0;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .pdf-modal-header h2 { margin: 0; color: #333; font-size: 1.25em; }
+        .pdf-modal-body { flex: 1; padding: 16px; overflow: auto; }
+        .pdf-viewer { width: 100%; height: 100%; border: none; }
+        .pdf-modal-footer {
+            padding: 16px 22px; border-top: 2px solid #e0e0e0;
+            display: flex; justify-content: flex-end; gap: 10px;
+        }
+        .btn-modal-dl {
+            background: #27ae60; color: white; border: none; padding: 11px 28px;
+            border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: 700; font-family: inherit;
+        }
+        .btn-modal-dl:hover { background: #229954; }
+        .btn-modal-close {
+            background: #e74c3c; color: white; border: none; padding: 11px 20px;
+            border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: 700; font-family: inherit;
+        }
+        .btn-modal-close:hover { background: #c0392b; }
+    </style>
+</head>
+<body>
+{% include '_nav.html' %}
+<div class="container pub-page">
+    <div class="pub-header">
+        {% if active_subject %}
+        <h1>📚 {{ active_subject }} mashqlari</h1>
+        <a href="/public-exercises" class="clear-filter-btn">✕ Filterni tozalash</a>
+        {% else %}
+        <h1>🌐 Barcha ko'rgazmalar</h1>
+        {% endif %}
+    </div>
+
+    <input type="text" class="search-bar" id="searchInput"
+           placeholder="🔍 Ko'rgazma nomini qidiring..." oninput="filterCards()">
+
+    <div class="filter-row" id="filterRow">
+        <button class="filter-btn active" data-type="all" onclick="setFilter(this,'all')">Hammasi</button>
+        <button class="filter-btn" data-type="word_search"     onclick="setFilter(this,'word_search')">🔍 So'z qidirish</button>
+        <button class="filter-btn" data-type="fill_gaps"       onclick="setFilter(this,'fill_gaps')">✍️ Bo'sh joylar</button>
+        <button class="filter-btn" data-type="matching"        onclick="setFilter(this,'matching')">🔗 Moslashtirish</button>
+        <!-- Crossword filter vaqtincha yashirilgan -->
+        <button class="filter-btn" data-type="domino"          onclick="setFilter(this,'domino')">🁣 Domino</button>
+        <button class="filter-btn" data-type="find_pairings"   onclick="setFilter(this,'find_pairings')">🃏 Juftliklar</button>
+    </div>
+
+    <div class="select-all-row">
+        <label>
+            <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+            Barchasini tanlash
+        </label>
+        <span id="selected-info">0 ta tanlangan</span>
+    </div>
+
+    <div class="pub-grid-wrap">
+        <div class="pub-grid" id="pubGrid">
+            {% if exercises %}
+                {% for ex in exercises %}
+                <div class="pub-card" data-id="{{ ex.id }}" data-type="{{ ex.type }}" data-title="{{ ex.title | lower }}" onclick="toggleCard(this)">
+                    <div class="card-checkbox">✓</div>
+                    <h3>{{ ex.title }}</h3>
+                    <div class="pub-card-meta">
+                        <span class="type-badge {{ ex.type }}">
+                            {% if ex.type == 'word_search' %}🔍 So'z qidirish
+                            {% elif ex.type == 'fill_gaps' %}✍️ Bo'sh joylar
+                            {% elif ex.type == 'matching' %}🔗 Moslashtirish
+                            {% elif ex.type == 'multiple_choice' %}☑️ Ko'p tanlov
+                            {% elif ex.type == 'crossword' %}✚ Krossvord
+                            {% elif ex.type == 'domino' %}🁣 Domino
+                            {% elif ex.type == 'find_pairings' %}🃏 Juftliklar
+                            {% else %}{{ ex.type }}{% endif %}
+                        </span>
+                        <span class="pub-date">📅 {{ ex.created_at[:10] }}</span>
+                    </div>
+                    <div class="pub-card-tags">
+                        <span class="tag-subject{% if not ex.subject %} tag-empty{% endif %}">📚 {{ ex.subject if ex.subject else 'Fan ko\'rsatilmagan' }}</span>
+                        <span class="tag-grade{% if not ex.grade %} tag-empty{% endif %}">🎓 {{ ex.grade if ex.grade else 'Sinf ko\'rsatilmagan' }}</span>
+                    </div>
+
+                    {# ── Canvas Preview ── #}
+                    <canvas class="ex-canvas-preview" data-id="{{ ex.id }}"></canvas>
+
+                    <div class="pub-actions" onclick="event.stopPropagation()">
+                        <a href="/exercise/{{ ex.id }}" class="btn btn-play">▶️ Bajarish</a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">🌐</div>
+                    <h3>Hozircha umumiy ko'rgazmalar yo'q</h3>
+                    <p>Foydalanuvchilar ko'rgazma yaratishda "ulashaman" deb tanlaganida bu yerda ko'rinadi.</p>
+                    <a href="/" class="btn btn-primary" style="margin-top:18px;">✨ Ko'rgazma yaratish</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- PDF Bottom bar -->
+<div class="pdf-bar">
+    <span class="sel-count" id="sel-count">0 ta ko'rgazma tanlangan</span>
+    <div class="bar-btns">
+        <button class="bar-btn bar-btn-preview"  id="btn-preview"  onclick="previewPDF()"  disabled>👁️ Ko'rib chiqish</button>
+        <button class="bar-btn bar-btn-download" id="btn-download" onclick="downloadPDF()" disabled>📄 PDF Yuklab Olish</button>
+    </div>
+</div>
+
+<!-- PDF Preview Modal -->
+<div id="pdfModal" class="pdf-modal">
+    <div class="pdf-modal-content">
+        <div class="pdf-modal-header">
+            <h2>📄 PDF Ko'rib chiqish</h2>
+            <button class="btn-modal-close" onclick="closeModal()">✕ Yopish</button>
+        </div>
+        <div class="pdf-modal-body">
+            <iframe id="pdfViewer" class="pdf-viewer"></iframe>
+        </div>
+        <div class="pdf-modal-footer">
+            <button class="btn-modal-dl"    onclick="downloadFromModal()">💾 Yuklab olish</button>
+            <button class="btn-modal-close" onclick="closeModal()">✕ Yopish</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let selected = new Set();
+    let activeType = 'all';
+    let currentBlob = null;
+
+    /* ── Card selection ── */
+    function toggleCard(card) {
+        const id = card.dataset.id;
+        if (selected.has(id)) { selected.delete(id); card.classList.remove('selected'); }
+        else                   { selected.add(id);    card.classList.add('selected');    }
+        updateBar();
+    }
+
+    function toggleSelectAll() {
+        const chk = document.getElementById('selectAll').checked;
+        document.querySelectorAll('.pub-card:not([style*="display: none"])').forEach(card => {
+            const id = card.dataset.id;
+            if (chk) { selected.add(id);    card.classList.add('selected'); }
+            else      { selected.delete(id); card.classList.remove('selected'); }
+        });
+        updateBar();
+    }
+
+    function updateBar() {
+        const n = selected.size;
+        document.getElementById('sel-count').textContent = `${n} ta ko'rgazma tanlangan`;
+        document.getElementById('selected-info').textContent = `${n} ta tanlangan`;
+        document.getElementById('btn-preview').disabled  = n === 0;
+        document.getElementById('btn-download').disabled = n === 0;
+    }
+
+    /* ── Filters ── */
+    function setFilter(btn, type) {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeType = type;
+        filterCards();
+    }
+
+    function filterCards() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        document.querySelectorAll('.pub-card').forEach(card => {
+            const ok = (activeType === 'all' || card.dataset.type === activeType)
+                    && card.dataset.title.includes(q);
+            card.style.display = ok ? '' : 'none';
+        });
+    }
+
+    /* ── PDF helpers ── */
+    function getIds() { return Array.from(selected).map(Number); }
+
+    async function fetchPDF() {
+        const resp = await fetch('/api/generate-pdf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ exercise_ids: getIds() })
+        });
+        if (!resp.ok) throw new Error('PDF xatosi');
+        return resp.blob();
+    }
+
+    async function previewPDF() {
+        const btn = document.getElementById('btn-preview');
+        btn.textContent = '⏳ Yuklanmoqda…'; btn.disabled = true;
+        try {
+            currentBlob = await fetchPDF();
+            const url = URL.createObjectURL(currentBlob);
+            document.getElementById('pdfViewer').src = url;
+            document.getElementById('pdfModal').classList.add('active');
+        } catch(e) { alert('PDF yaratishda xatolik yuz berdi!'); }
+        btn.textContent = '👁️ Ko\'rib chiqish'; btn.disabled = selected.size === 0;
+    }
+
+    async function downloadPDF() {
+        const btn = document.getElementById('btn-download');
+        btn.textContent = '⏳ Yaratilmoqda…'; btn.disabled = true;
+        try {
+            const blob = await fetchPDF();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'worksheets.pdf'; a.click();
+            URL.revokeObjectURL(url);
+        } catch(e) { alert('Xatolik yuz berdi!'); }
+        btn.textContent = '📄 PDF Yuklab Olish'; btn.disabled = selected.size === 0;
+    }
+
+    function downloadFromModal() {
+        if (!currentBlob) return;
+        const url = URL.createObjectURL(currentBlob);
+        const a = document.createElement('a'); a.href = url; a.download = 'worksheets.pdf';
+        document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    }
+
+    function closeModal() {
+        document.getElementById('pdfModal').classList.remove('active');
+        document.getElementById('pdfViewer').src = '';
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    /* ══════════════════════════════════════════
+       CANVAS PREVIEW RENDERERS
+    ══════════════════════════════════════════ */
+    const PREVIEW_DATA = {
+        {% for ex in exercises %}
+        "{{ ex.id }}": {
+            type:  {{ ex.type | tojson }},
+            words: {{ ex._preview_words | tojson }},
+            grid:  {{ (ex._preview_grid or []) | tojson }}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    };
+
+    function rrect(ctx, x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x+r, y); ctx.lineTo(x+w-r, y);
+        ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+        ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+        ctx.lineTo(x+r, y+h); ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+        ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y);
+        ctx.closePath();
+    }
+
+    function drawWordSearch(ctx, grid, W, H) {
+        const rows = Math.min(grid.length, 10);
+        const cols = Math.min((grid[0]||[]).length, 10);
+        if (!cols) return;
+        const cs = Math.min((W-12)/cols, (H-8)/rows);
+        const ox = (W - cs*cols)/2, oy = (H - cs*rows)/2;
+        ctx.font = `bold ${Math.max(5, cs*0.58)}px monospace`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        // Highlight a few random cells to look like found words
+        const highlights = new Set();
+        if (cols >= 4) {
+            for (let c=1; c<Math.min(5,cols); c++) highlights.add(`0,${c}`);
+            for (let r=1; r<Math.min(4,rows); r++) highlights.add(`${r},${cols-2}`);
+        }
+        for (let r=0; r<rows; r++) {
+            for (let c=0; c<cols; c++) {
+                const x=ox+c*cs, y=oy+r*cs;
+                const hi = highlights.has(`${r},${c}`);
+                ctx.fillStyle = hi ? '#fff3b0' : '#fff';
+                ctx.fillRect(x,y,cs-0.5,cs-0.5);
+                ctx.strokeStyle = '#ddd'; ctx.lineWidth=0.5;
+                ctx.strokeRect(x,y,cs-0.5,cs-0.5);
+                if (hi) { ctx.strokeStyle='#f39c12'; ctx.lineWidth=0.7; ctx.strokeRect(x,y,cs-0.5,cs-0.5); }
+                const ch = (grid[r]&&grid[r][c])||'';
+                ctx.fillStyle = hi ? '#c17d0a' : '#333';
+                ctx.fillText(ch.toUpperCase(), x+cs/2, y+cs/2);
+            }
+        }
+    }
+
+    function drawFillGaps(ctx, words, W, H) {
+        const COLORS = ['#e74c3c','#3498db','#27ae60','#f39c12','#9b59b6','#1abc9c'];
+        const n = Math.min(words.length, 4);
+        if (!n) return;
+        ctx.fillStyle = '#fffef0'; ctx.fillRect(0,0,W,H);
+        ctx.strokeStyle = '#4a9e5c'; ctx.lineWidth=1.5;
+        rrect(ctx,2,2,W-4,H-4,6); ctx.stroke();
+        const rowH = (H-16)/n;
+        ctx.textBaseline = 'middle';
+        for (let i=0; i<n; i++) {
+            const word = String(words[i]).toUpperCase();
+            const cy = 10 + i*rowH + rowH/2;
+            const col = COLORS[i%COLORS.length];
+            ctx.fillStyle = col;
+            ctx.beginPath(); ctx.arc(14,cy,4,0,Math.PI*2); ctx.fill();
+            const gapW = Math.min(10, (W-90)/Math.max(word.length,1));
+            const maxLetters = Math.min(word.length, Math.floor((W-90)/12));
+            let sx = 26;
+            ctx.strokeStyle = col; ctx.lineWidth=1.5;
+            for (let j=0; j<maxLetters; j++) {
+                ctx.beginPath(); ctx.moveTo(sx+j*(gapW+2), cy+7); ctx.lineTo(sx+j*(gapW+2)+gapW, cy+7); ctx.stroke();
+            }
+            const dx = sx + maxLetters*(gapW+2) + 8;
+            ctx.font='bold 8px sans-serif'; ctx.textAlign='left'; ctx.fillStyle='#aaa';
+            ctx.fillText('-', dx, cy);
+            ctx.fillStyle = col;
+            ctx.fillText(word.substring(0,12), dx+10, cy);
+        }
+    }
+
+    function drawMatching(ctx, words, W, H) {
+        const n = Math.min(words.length, 4);
+        if (!n) return;
+        const rowH = (H-12)/n, colW = W/2-16;
+        const lx=8, rx=W/2+8;
+        ctx.font='bold 9px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        for (let i=0; i<n; i++) {
+            const item=words[i], en=Array.isArray(item)?item[0]:String(item), uz=Array.isArray(item)?item[1]:'';
+            const y=8+i*rowH, bh=rowH-5;
+            ctx.fillStyle='#2980b9'; rrect(ctx,lx,y,colW,bh,4); ctx.fill();
+            ctx.fillStyle='#fff'; ctx.fillText(en.substring(0,11), lx+colW/2, y+bh/2);
+            ctx.setLineDash([3,2]); ctx.strokeStyle='#bdc3c7'; ctx.lineWidth=0.8;
+            ctx.beginPath(); ctx.moveTo(lx+colW+3,y+bh/2); ctx.lineTo(rx-3,y+bh/2); ctx.stroke();
+            ctx.setLineDash([]);
+            if (uz) {
+                ctx.fillStyle='#27ae60'; rrect(ctx,rx,y,colW,bh,4); ctx.fill();
+                ctx.fillStyle='#fff'; ctx.fillText(uz.substring(0,11), rx+colW/2, y+bh/2);
+            }
+        }
+    }
+
+    function drawFindPairings(ctx, words, W, H) {
+        const n = Math.min(words.length, 4);
+        if (!n) return;
+        const gap=5, cardW=(W-12-(n-1)*gap)/n, cardH=(H-14)/2;
+        ctx.font='bold 8px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        for (let i=0; i<n; i++) {
+            const item=words[i], en=Array.isArray(item)?item[0]:String(item), uz=Array.isArray(item)?item[1]:'';
+            const x=8+i*(cardW+gap);
+            ctx.fillStyle='#FFD700'; rrect(ctx,x,6,cardW,cardH,4); ctx.fill();
+            ctx.strokeStyle='#e6b800'; ctx.lineWidth=0.8; ctx.stroke();
+            ctx.fillStyle='#0000cc'; ctx.fillText(en.substring(0,8), x+cardW/2, 6+cardH/2);
+            const y2=8+cardH;
+            ctx.fillStyle='#c8f7c5'; rrect(ctx,x,y2,cardW,cardH,4); ctx.fill();
+            ctx.strokeStyle='#66BB6A'; ctx.lineWidth=0.8; ctx.stroke();
+            ctx.fillStyle='#006622'; ctx.fillText((uz||en).substring(0,8), x+cardW/2, y2+cardH/2);
+        }
+    }
+
+    function drawDomino(ctx, words, W, H) {
+        const n = Math.min(words.length, 4);
+        if (!n) return;
+        const gap=5, cardW=(W-12-(n-1)*gap)/n, imgH=H*0.55, lblH=H*0.33, cardH=imgH+lblH+2, yo=(H-cardH)/2;
+        ctx.textBaseline='middle';
+        for (let i=0; i<n; i++) {
+            const word=String(words[i]).toUpperCase(), x=6+i*(cardW+gap);
+            ctx.fillStyle='#fff'; rrect(ctx,x,yo,cardW,cardH,4); ctx.fill();
+            ctx.strokeStyle='#ccc'; ctx.lineWidth=0.8; ctx.stroke();
+            // Image area
+            ctx.fillStyle='#e8e8e8'; rrect(ctx,x+2,yo+2,cardW-4,imgH-2,3); ctx.fill();
+            // Camera icon
+            ctx.fillStyle='#b0b0b0'; ctx.font=`${imgH*0.45}px sans-serif`; ctx.textAlign='center';
+            ctx.fillText('\uD83D\uDDBC', x+cardW/2, yo+imgH*0.55);
+            // Divider
+            ctx.strokeStyle='#ddd'; ctx.lineWidth=0.7;
+            ctx.beginPath(); ctx.moveTo(x+3,yo+imgH+1); ctx.lineTo(x+cardW-3,yo+imgH+1); ctx.stroke();
+            // Label
+            ctx.fillStyle='#1a237e'; ctx.font=`bold ${Math.min(8,cardW*0.22)}px sans-serif`;
+            ctx.fillText(word.substring(0,Math.floor(cardW/7)), x+cardW/2, yo+imgH+2+lblH/2);
+        }
+    }
+
+    function drawCrossword(ctx, words, W, H) {
+        const gs=8, cs=Math.min((W*0.52-8)/gs, (H-8)/gs);
+        const gx=8, gy=(H-cs*gs)/2;
+        for (let r=0; r<gs; r++) for (let c=0; c<gs; c++) {
+            const blk = (r===1&&c===2)||(r===3&&c===5)||(r===5&&c===1)||(r===2&&c===7)||(r===6&&c===3);
+            ctx.fillStyle = blk ? '#aaa' : '#fffbbf';
+            ctx.fillRect(gx+c*cs, gy+r*cs, cs-0.5, cs-0.5);
+            if (!blk) { ctx.strokeStyle='#999'; ctx.lineWidth=0.4; ctx.strokeRect(gx+c*cs,gy+r*cs,cs-0.5,cs-0.5); }
+        }
+        const chipX=gx+gs*cs+10, aw=W-chipX-8;
+        ctx.font='bold 8px sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle';
+        const nn=Math.min(words.length,5);
+        for (let i=0; i<nn; i++) {
+            const cy=8+i*(H-16)/nn+((H-16)/nn)/2;
+            ctx.fillStyle='#e8f4fd'; rrect(ctx,chipX,cy-7,aw,14,3); ctx.fill();
+            ctx.strokeStyle='#a0c4e8'; ctx.lineWidth=0.5; ctx.stroke();
+            ctx.fillStyle='#1a4f7a'; ctx.fillText(String(words[i]).substring(0,10), chipX+5, cy);
+        }
+    }
+
+    function initPreviews() {
+        const dpr = window.devicePixelRatio || 1;
+        document.querySelectorAll('.ex-canvas-preview').forEach(canvas => {
+            const data = PREVIEW_DATA[canvas.dataset.id];
+            if (!data) return;
+            const rect = canvas.getBoundingClientRect();
+            const W = Math.round(rect.width * dpr);
+            const H = Math.round(108 * dpr);
+            canvas.width = W; canvas.height = H;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            const cw = rect.width, ch = 108;
+            ctx.fillStyle = '#f8f9fc'; ctx.fillRect(0,0,cw,ch);
+            ctx.save();
+            try {
+                switch(data.type) {
+                    case 'word_search':   drawWordSearch(ctx, data.grid, cw, ch); break;
+                    case 'fill_gaps':     drawFillGaps(ctx, data.words, cw, ch); break;
+                    case 'matching':      drawMatching(ctx, data.words, cw, ch); break;
+                    case 'find_pairings': drawFindPairings(ctx, data.words, cw, ch); break;
+                    case 'domino':        drawDomino(ctx, data.words, cw, ch); break;
+                    case 'crossword':     drawCrossword(ctx, data.words, cw, ch); break;
+                }
+            } catch(e) { console.warn('preview err', e); }
+            ctx.restore();
+        });
+    }
+
+    // Cardlar render bo'lgandan keyin chizish
+    window.addEventListener('load', initPreviews);
+</script>
+{% include '_nav_js.html' %}
+</body>
+</html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduSet.uz – Ko'rgazma Yaratish</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ cache_version }}">
+    <script src="{{ url_for('static', filename='js/zoom.js') }}?v={{ cache_version }}"></script>
+    <style>
+        .main-content { max-width: 1120px; margin: 0 auto; padding: 28px 24px 60px; }
+        .page-header { margin-bottom: 24px; }
+        .page-header h1 { font-size: 1.65em; font-weight: 800; color: #1f2937; margin-bottom: 4px; }
+        .page-header p { color: #6b7280; font-size: .88em; }
+        .top-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 28px; }
+        .activity-card { background: #fff; border-radius: 18px; padding: 24px; box-shadow: 0 2px 14px rgba(0,0,0,.06); }
+        .activity-card-title { font-size: .75em; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 18px; }
+        .stats-row { display: flex; gap: 28px; }
+        .stat-item { display: flex; align-items: center; gap: 12px; }
+        .stat-icon { width: 50px; height: 50px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 1.4em; flex-shrink: 0; }
+        .stat-icon.blue { background: #eff6ff; }
+        .stat-icon.purple { background: #f5f3ff; }
+        .stat-value { font-size: 1.5em; font-weight: 800; color: #111827; line-height: 1; }
+        .stat-label { font-size: .75em; color: #6b7280; margin-top: 3px; }
+        .quick-action-card { background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 18px; padding: 24px; display: flex; align-items: center; box-shadow: 0 4px 20px rgba(102,126,234,.4); overflow: hidden; position: relative; }
+        .quick-action-card::after { content: '🚀'; font-size: 6em; position: absolute; right: 16px; top: 50%; transform: translateY(-50%); opacity: .15; pointer-events: none; }
+        .quick-action-label { color: rgba(255,255,255,.7); font-size: .75em; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 12px; }
+        .btn-quick-action { background: #fff; color: #764ba2; border: none; padding: 11px 24px; border-radius: 10px; font-weight: 800; font-size: .9em; cursor: pointer; text-decoration: none; display: inline-block; transition: all .2s; }
+        .btn-quick-action:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+        .section-title { font-size: 1.05em; font-weight: 800; color: #1f2937; margin-bottom: 14px; }
+        .ws-section { margin-bottom: 28px; }
+        .ws-types-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .ws-type-card { background: #fff; border-radius: 14px; padding: 16px 14px; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #1f2937; box-shadow: 0 2px 10px rgba(0,0,0,.05); border: 2px solid #f3f4f6; transition: all .22s; position: relative; }
+        .ws-type-card:hover:not(.disabled) { transform: translateY(-3px); box-shadow: 0 7px 24px rgba(0,0,0,.1); border-color: #d8b4fe; }
+        .ws-type-card.disabled { opacity: .6; cursor: default; }
+        .ws-type-icon-wrap { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.45em; flex-shrink: 0; }
+        .ws-type-name { font-weight: 700; font-size: .9em; }
+        .ws-type-desc { font-size: .75em; color: #6b7280; margin-top: 2px; line-height: 1.4; }
+        .ws-badge { position: absolute; top: 8px; right: 8px; font-size: .64em; font-weight: 700; padding: 2px 9px; border-radius: 18px; }
+        .badge-soon { background: #fef3c7; color: #d97706; }
+        .vocab-btn-row { margin-bottom: 28px; display: flex; gap: 12px; flex-wrap: wrap; }
+        .vocab-btn-row a { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: .92em; transition: all .2s; }
+        .vocab-card { background: linear-gradient(135deg,#00b894,#00cec9); color:#fff; box-shadow: 0 3px 14px rgba(0,184,148,.35); }
+        .vocab-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,184,148,.5); }
+        .pdf-card { background: #fff; color: #e67e22; border: 2px solid #fdebd0; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+        .pdf-card:hover { border-color: #e67e22; transform: translateY(-2px); }
+        .recent-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .recent-card { background: #fff; border-radius: 18px; padding: 20px 22px; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+        .recent-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+        .recent-card-header h3 { font-size: .9em; font-weight: 700; }
+        .recent-card-header a { font-size: .78em; color: #764ba2; text-decoration: none; font-weight: 600; }
+        .recent-item { display: flex; align-items: center; gap: 10px; padding: 10px 6px; border-radius: 8px; text-decoration: none; color: inherit; transition: background .15s; border-bottom: 1px solid #f3f4f6; }
+        .recent-item:last-child { border-bottom: none; }
+        .recent-item:hover { background: #f9fafb; }
+        .recent-item-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1em; flex-shrink: 0; }
+        .recent-title { font-weight: 600; font-size: .85em; }
+        .recent-meta { font-size: .72em; color: #9ca3af; margin-top: 2px; }
+        .recent-arrow { margin-left: auto; color: #d1d5db; }
+        .no-items { text-align: center; padding: 20px 0; color: #9ca3af; font-size: .85em; }
+        @media (max-width: 900px) { .ws-types-grid { grid-template-columns: repeat(2,1fr); } .top-cards,.recent-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 600px) { .main-content { padding: 14px 12px 40px; } .ws-types-grid { grid-template-columns: 1fr 1fr; } .stats-row { gap: 14px; } }
+    </style>
+</head>
+<body>
+    {% include '_nav.html' %}
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1>Xush kelibsiz, <span id="welcome-name">...</span> 👋</h1>
+            <p>Bugun yangi ko'rgazma yaratish uchun ajoyib kun!</p>
+        </div>
+
+        <div class="top-cards">
+            <div class="activity-card">
+                <div class="activity-card-title">Sizning faoliyatingiz</div>
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <div class="stat-icon blue">📄</div>
+                        <div>
+                            <div class="stat-value" id="ws-count">—</div>
+                            <div class="stat-label">Yaratilgan ko'rgazmalar</div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon purple">🌐</div>
+                        <div>
+                            <div class="stat-value" id="public-count">—</div>
+                            <div class="stat-label">Umumiy ulashilgan</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="quick-action-card">
+                <div>
+                    <div class="quick-action-label">Tezkor amal</div>
+                    <a href="#exercise-types" onclick="document.getElementById('exercise-types').scrollIntoView({behavior:'smooth'}); return false;" class="btn-quick-action">+ Yangi ko'rgazma yaratish</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="vocab-btn-row">
+            <a href="/lesson-assistant" class="pdf-card">🖨️ PDF yuklab olish</a>
+        </div>
+
+        <div class="ws-section" id="exercise-types">
+            <div class="section-title">✨ Yangi ko'rgazma yaratish</div>
+            <div class="ws-types-grid">
+                <a href="#" onclick="pickSubject('word_search'); return false;" class="ws-type-card">
+                    <div class="ws-type-icon-wrap" style="background:#fff3e0;">🔍</div>
+                    <div>
+                        <div class="ws-type-name">So'z qidirish (Word Search)</div>
+                        <div class="ws-type-desc">So'zlarni jadvaldan topish mashqi</div>
+                    </div>
+                </a>
+                <a href="#" onclick="pickSubject('fill_gaps'); return false;" class="ws-type-card">
+                    <div class="ws-type-icon-wrap" style="background:#e8f5e9;">✍️</div>
+                    <div>
+                        <div class="ws-type-name">Bo'sh joylarni to'ldirish</div>
+                        <div class="ws-type-desc">Bo'sh harflarni to'ldirish mashqi</div>
+                    </div>
+                </a>
+                <a href="#" onclick="pickSubject('matching'); return false;" class="ws-type-card">
+                    <div class="ws-type-icon-wrap" style="background:#e3f2fd;">🔗</div>
+                    <div>
+                        <div class="ws-type-name">Moslashtirish (Matching)</div>
+                        <div class="ws-type-desc">So'zlarni ta'riflari bilan moslashtirish</div>
+                    </div>
+                </a>
+                <a href="#" class="ws-type-card disabled" onclick="alert('Crossword tez kunda tayyor bo\'ladi! ⏳'); return false;">
+                    <div class="ws-type-icon-wrap" style="background:#fce4ec;">✚</div>
+                    <div>
+                        <div class="ws-type-name">Krossvord (Crossword)</div>
+                        <div class="ws-type-desc">Tez kunda tayyor bo'ladi</div>
+                    </div>
+                    <span class="ws-badge badge-soon">Tez kunda</span>
+                </a>
+                <a href="#" class="ws-type-card disabled" onclick="alert('Domino tez kunda tayyor bo\'ladi! ⏳'); return false;">
+                    <div class="ws-type-icon-wrap" style="background:#fff8e1;">🁣</div>
+                    <div>
+                        <div class="ws-type-name">Domino</div>
+                        <div class="ws-type-desc">Tez kunda tayyor bo'ladi</div>
+                    </div>
+                    <span class="ws-badge badge-soon">Tez kunda</span>
+                </a>
+                <a href="#" class="ws-type-card disabled" onclick="alert('Juftliklarni topish tez kunda tayyor bo\'ladi! ⏳'); return false;">
+                    <div class="ws-type-icon-wrap" style="background:#e0f7fa;">🃏</div>
+                    <div>
+                        <div class="ws-type-name">Juftliklarni topish</div>
+                        <div class="ws-type-desc">Tez kunda tayyor bo'ladi</div>
+                    </div>
+                    <span class="ws-badge badge-soon">Tez kunda</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Subject Picker Modal -->
+        <div id="subject-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.48); z-index:9000; align-items:center; justify-content:center;">
+            <div style="background:#fff; border-radius:20px; padding:32px 28px 24px; max-width:400px; width:92%; box-shadow:0 16px 48px rgba(0,0,0,.22);">
+                <div style="font-size:1.2em; font-weight:800; color:#1f2937; margin-bottom:6px;">📚 Fanni tanlang</div>
+                <div style="font-size:.85em; color:#6b7280; margin-bottom:20px;">Ko'rgazma qaysi fan uchun tayyorlanmoqda?</div>
+                <select id="modal-subject" style="width:100%; padding:12px 14px; border:2px solid #e5e7eb; border-radius:10px; font-size:1em; color:#1f2937; background:#f9fafb; outline:none; margin-bottom:20px; cursor:pointer;">
+                    <option value="">— Fanni tanlang —</option>
+                    <option value="Ingliz tili">Ingliz tili</option>
+                    <option value="O'zbek tili">O'zbek tili</option>
+                    <option value="Matematika">Matematika</option>
+                    <option value="Ona tili va adabiyot">Ona tili va adabiyot</option>
+                    <option value="Fizika">Fizika</option>
+                    <option value="Kimyo">Kimyo</option>
+                    <option value="Biologiya">Biologiya</option>
+                    <option value="Tarix">Tarix</option>
+                    <option value="Geografiya">Geografiya</option>
+                    <option value="Informatika">Informatika</option>
+                    <option value="Musiqa">Musiqa</option>
+                    <option value="Tasviriy san'at">Tasviriy san'at</option>
+                    <option value="Jismoniy tarbiya">Jismoniy tarbiya</option>
+                    <option value="Boshqa">Boshqa</option>
+                </select>
+                <div style="display:flex; gap:10px;">
+                    <button onclick="closeSubjectModal()" style="flex:1; padding:12px; border:2px solid #e5e7eb; border-radius:10px; background:#fff; font-size:.9em; font-weight:600; cursor:pointer; color:#6b7280;">Bekor qilish</button>
+                    <button onclick="confirmSubject()" style="flex:2; padding:12px; border:none; border-radius:10px; background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; font-size:.95em; font-weight:700; cursor:pointer;">✅ Davom etish</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="recent-grid">
+            <div class="recent-card">
+                <div class="recent-card-header">
+                    <h3>Mening ko'rgazmalarim</h3>
+                    <a href="/admin">Barchasini ko'rish →</a>
+                </div>
+                <div id="recent-mine"><div class="no-items">Yuklanmoqda...</div></div>
+            </div>
+            <div class="recent-card">
+                <div class="recent-card-header">
+                    <h3>Barcha ko'rgazmalar</h3>
+                    <a href="/public-exercises">Ko'rish →</a>
+                </div>
+                <div id="recent-community"><div class="no-items">Yuklanmoqda...</div></div>
+            </div>
+        </div>
+    </main>
+
+    {% include '_nav_js.html' %}
+    <script>
+        const TYPE_META = {
+            word_search:   { icon: '🔍', bg: '#fff3e0' },
+            fill_gaps:     { icon: '✍️', bg: '#e8f5e9' },
+            matching:      { icon: '🔗', bg: '#e3f2fd' },
+            crossword:     { icon: '✚', bg: '#fce4ec' },
+            domino:        { icon: '🁣', bg: '#fff8e1' },
+            find_pairings: { icon: '🃏', bg: '#e0f7fa' }
+        };
+        function timeAgo(dateStr) {
+            const diff = Math.floor((new Date() - new Date(dateStr)) / 1000);
+            if (diff < 60) return 'hozirgina';
+            if (diff < 3600) return Math.floor(diff/60) + ' daqiqa oldin';
+            if (diff < 86400) return Math.floor(diff/3600) + ' soat oldin';
+            if (diff < 604800) return Math.floor(diff/86400) + ' kun oldin';
+            return Math.floor(diff/604800) + ' hafta oldin';
+        }
+        function renderRecent(containerId, items, linkBase) {
+            const el = document.getElementById(containerId);
+            if (!items || !items.length) { el.innerHTML = '<div class="no-items">Hali ko\'rgazma yo\'q</div>'; return; }
+            el.innerHTML = items.slice(0,4).map(ex => {
+                const m = TYPE_META[ex.type] || {icon:'📄',bg:'#f3f4f6'};
+                return `<a href="${linkBase}" class="recent-item">
+                    <div class="recent-item-icon" style="background:${m.bg}">${m.icon}</div>
+                    <div style="flex:1;min-width:0;">
+                        <div class="recent-title" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${ex.title||'Nomsiz'}</div>
+                        <div class="recent-meta">${timeAgo(ex.created_at)}</div>
+                    </div>
+                    <span class="recent-arrow">›</span>
+                </a>`;
+            }).join('');
+        }
+        async function loadMyStats() {
+            try {
+                const res = await fetch('/api/exercises');
+                const list = await res.json();
+                document.getElementById('ws-count').textContent = list.length;
+                document.getElementById('public-count').textContent = list.filter(e=>e.is_public).length;
+                renderRecent('recent-mine', list, '/admin');
+            } catch(e) {
+                document.getElementById('ws-count').textContent = '0';
+                document.getElementById('public-count').textContent = '0';
+            }
+        }
+        async function loadCommunityRecent() {
+            try {
+                const res = await fetch('/api/exercises/public');
+                const data = await res.json();
+                const list = Array.isArray(data) ? data : (data.exercises||[]);
+                renderRecent('recent-community', list, '/public-exercises');
+            } catch(e) { document.getElementById('recent-community').innerHTML = '<div class="no-items">Yuklab bo\'lmadi</div>'; }
+        }
+        let _pendingType = null;
+        function pickSubject(type) {
+            _pendingType = type;
+            const sel = document.getElementById('modal-subject');
+            sel.value = '';
+            sel.style.borderColor = '#e5e7eb';
+            const modal = document.getElementById('subject-modal');
+            modal.style.display = 'flex';
+        }
+        function closeSubjectModal() {
+            document.getElementById('subject-modal').style.display = 'none';
+            _pendingType = null;
+        }
+        function confirmSubject() {
+            const sel = document.getElementById('modal-subject');
+            if (!sel.value) {
+                sel.style.borderColor = '#ef4444';
+                sel.focus();
+                return;
+            }
+            const type = _pendingType;
+            sessionStorage.setItem('pendingSubject', sel.value);
+            closeSubjectModal();
+            if (type) {
+                window.location.href = '/create/' + type;
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('subject-modal').addEventListener('click', function(e) {
+                if (e.target === this) closeSubjectModal();
+            });
+        });
+        function onUserSet(name) { loadMyStats(); }
+        document.addEventListener('DOMContentLoaded', () => { loadMyStats(); loadCommunityRecent(); });
+    </script>
+</body>
+</html>

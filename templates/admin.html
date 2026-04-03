@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mening ko'rgazmalarim – EduSet.uz</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include '_nav.html' %}
+    <div class="container">
+        <header>
+            <h1>📋 Mening ko'rgazmalarim</h1>
+        </header>
+
+        <div class="exercises-list">
+            {% if exercises %}
+                {% for exercise in exercises %}
+                <div class="exercise-card" data-id="{{ exercise.id }}">
+                    <div class="exercise-header">
+                        <h3>{{ exercise.title }}</h3>
+                        <span class="exercise-type">
+                            {% if exercise.type == 'matching' %}
+                                🔗 Moslashtirish
+                            {% elif exercise.type == 'fill_gaps' %}
+                                ✍️ Bo'sh joylarni to'ldirish
+                            {% elif exercise.type == 'word_search' %}
+                                🔍 So'z qidirish
+                            {% elif exercise.type == 'crossword' %}
+                                ✚ Krossvord
+                            {% elif exercise.type == 'domino' %}
+                                🁣 Domino
+                            {% elif exercise.type == 'find_pairings' %}
+                                🃏 Juftliklarni topish
+                            {% else %}
+                                {{ exercise.type }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="exercise-meta">
+                        <span>📅 {{ exercise.created_at }}</span>
+                        {% if exercise.subject %}<span style="background:#e3f2fd;color:#1565c0;padding:2px 8px;border-radius:10px;font-size:.75em;font-weight:600;">📚 {{ exercise.subject }}</span>{% endif %}
+                        {% if exercise.grade %}<span style="background:#f3e5f5;color:#6a1b9a;padding:2px 8px;border-radius:10px;font-size:.75em;font-weight:600;">🎓 {{ exercise.grade }}</span>{% endif %}
+                        {% if exercise.is_public %}
+                            <span style="background:#27ae60;color:#fff;padding:2px 8px;border-radius:10px;font-size:.75em;font-weight:700;">🌐 Umumiy</span>
+                        {% else %}
+                            <span style="background:#95a5a6;color:#fff;padding:2px 8px;border-radius:10px;font-size:.75em;font-weight:700;">🔒 Shaxsiy</span>
+                        {% endif %}
+                    </div>
+                    <div class="exercise-actions">
+                        <a href="/lesson-assistant" class="btn btn-small btn-accent">🖨️ PDF</a>
+                        <a href="/exercise/{{ exercise.id }}" class="btn btn-small btn-primary">▶️ Bajarish</a>
+                        <a href="/edit/{{ exercise.id }}" class="btn btn-small btn-warning">✏️ Tahrirlash</a>
+                        <button onclick="deleteExercise({{ exercise.id }})" class="btn btn-small btn-danger">🗑️ O'chirish</button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <p>❌ Hozircha ko'rgazma yo'q</p>
+                    <a href="/" class="btn btn-primary">✨ Ko'rgazma yaratish</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% include '_nav_js.html' %}
+    <script src="{{ url_for('static', filename='js/zoom.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>

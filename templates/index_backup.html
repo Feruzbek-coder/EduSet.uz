@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduSet.uz – Worksheet Creator</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <script src="{{ url_for('static', filename='js/zoom.js') }}?v={{ cache_version }}"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f4f5f9;
+            min-height: 100vh;
+            color: #1f2937;
+        }
+
+        /* ══════════ TOP NAVIGATION ══════════ */
+        .top-nav {
+            background: #fff;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            padding: 0 28px;
+            gap: 0;
+            box-shadow: 0 1px 0 #e5e7eb, 0 2px 12px rgba(0,0,0,.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-brand {
+            font-size: 1.15em;
+            font-weight: 800;
+            color: #5b21b6;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-right: 36px;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            flex: 1;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: .88em;
+            color: #6b7280;
+            transition: all .18s;
+        }
+        .nav-link:hover { background: #f3f0ff; color: #5b21b6; }
+        .nav-link.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff !important;
+        }
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: auto;
+        }
+        .btn-create-new {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: .88em;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all .2s;
+            white-space: nowrap;
+            display: inline-block;
+        }
+        .btn-create-new:hover {
+            opacity: .9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(102,126,234,.45);
+        }
+        .user-menu-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px 6px 6px;
+            border: 2px solid #e5e7eb;
+            border-radius: 30px;
+            background: #fff;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: .88em;
+            color: #374151;
+            transition: border-color .2s;
+        }
+        .user-menu-btn:hover { border-color: #764ba2; }
+        .user-avatar {
+            width: 32px; height: 32px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-weight: 800; font-size: .88em;
+            flex-shrink: 0;
+        }
+
+        /* ══════════ MAIN CONTENT ══════════ */
+        .main-content {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 32px 24px 64px;
+        }
+
+        /* Page header */
+        .page-header {
+            margin-bottom: 28px;
+        }
+        .page-header h1 {
+            font-size: 1.7em;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        .page-header p { color: #6b7280; font-size: .9em; }
+
+        /* ══════════ STATS + QUICK ACTION ROW ══════════ */
+        .top-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+        .activity-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 26px 28px;
+            box-shadow: 0 2px 16px rgba(0,0,0,.06);
+        }
+        .activity-card-title {
+            font-size: .78em;
+            font-weight: 700;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            margin-bottom: 22px;
+        }
+        .stats-row {
+            display: flex;
+            gap: 32px;
+        }
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .stat-icon {
+            width: 54px; height: 54px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5em;
+            flex-shrink: 0;
+        }
+        .stat-icon.blue  { background: #eff6ff; }
+        .stat-icon.purple { background: #f5f3ff; }
+        .stat-value {
+            font-size: 1.6em;
+            font-weight: 800;
+            color: #111827;
+            line-height: 1;
+        }
+        .stat-label {
+            font-size: .78em;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .quick-action-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 26px 28px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 24px rgba(102,126,234,.45);
+            overflow: hidden;
+            position: relative;
+        }
+        .quick-action-card::after {
+            content: '🚀';
+            font-size: 7em;
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: .18;
+            pointer-events: none;
+        }
+        .quick-action-label {
+            color: rgba(255,255,255,.75);
+            font-size: .78em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            margin-bottom: 14px;
+        }
+        .btn-quick-action {
+            background: #fff;
+            color: #764ba2;
+            border: none;
+            padding: 12px 26px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: .92em;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all .2s;
+        }
+        .btn-quick-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,.18);
+        }
+
+        /* ══════════ WORKSHEET TYPE CARDS ══════════ */
+        .section-title {
+            font-size: 1.1em;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 16px;
+        }
+        .ws-section { margin-bottom: 32px; }
+        .ws-types-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+        .ws-type-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 18px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+            color: #1f2937;
+            box-shadow: 0 2px 10px rgba(0,0,0,.05);
+            border: 2px solid #f3f4f6;
+            transition: all .22s;
+            position: relative;
+        }
+        .ws-type-card:hover:not(.disabled) {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 28px rgba(0,0,0,.1);
+            border-color: #d8b4fe;
+        }
+        .ws-type-card.disabled {
+            opacity: .62;
+            cursor: default;
+        }
+        .ws-type-icon-wrap {
+            width: 52px; height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.55em;
+            flex-shrink: 0;
+        }
+        .ws-type-name {
+            font-weight: 700;
+            font-size: .95em;
+        }
+        .ws-type-desc {
+            font-size: .78em;
+            color: #6b7280;
+            margin-top: 3px;
+            line-height: 1.4;
+        }
+        .ws-badge {
+            position: absolute;
+            top: 10px; right: 10px;
+            font-size: .68em;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+        .badge-soon    { background: #fef3c7; color: #d97706; }
+        .badge-premium { background: #f5f3ff; color: #7c3aed; }
+
+        /* ══════════ RECENT WORKSHEETS ══════════ */
+        .recent-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .recent-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 22px 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06);
+        }
+        .recent-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .recent-card-header h3 {
+            font-size: .95em;
+            font-weight: 700;
+        }
+        .recent-card-header a {
+            font-size: .8em;
+            color: #764ba2;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .recent-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 8px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: inherit;
+            transition: background .15s;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .recent-item:last-child { border-bottom: none; }
+        .recent-item:hover { background: #f9fafb; }
+        .recent-item-icon {
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.15em;
+            flex-shrink: 0;
+        }
+        .recent-title {
+            font-weight: 600;
+            font-size: .88em;
+        }
+        .recent-meta {
+            font-size: .75em;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+        .recent-arrow { margin-left: auto; color: #d1d5db; }
+        .no-items {
+            text-align: center;
+            padding: 22px 0;
+            color: #9ca3af;
+            font-size: .88em;
+        }
+
+        /* ══════════ USER MODAL ══════════ */
+        #user-modal {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,.55);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-box {
+            background: #fff;
+            border-radius: 20px;
+            padding: 40px 32px;
+            max-width: 420px; width: 95%;
+            box-shadow: 0 24px 60px rgba(0,0,0,.25);
+            text-align: center;
+        }
+        .modal-box input {
+            width: 100%; padding: 12px 16px;
+            border: 2px solid #e5e7eb; border-radius: 10px;
+            font-size: 1em; font-family: inherit;
+            margin-bottom: 16px; outline: none;
+            transition: border-color .2s;
+        }
+        .modal-box input:focus { border-color: #667eea; }
+        .modal-box button {
+            width: 100%; padding: 13px;
+            background: linear-gradient(135deg,#667eea,#764ba2);
+            color: #fff; border: none; border-radius: 10px;
+            font-size: 1em; font-weight: 700;
+            cursor: pointer; font-family: inherit;
+        }
+
+        /* ══════════ RESPONSIVE ══════════ */
+        @media (max-width: 900px) {
+            .ws-types-grid { grid-template-columns: repeat(2, 1fr); }
+            .top-cards, .recent-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 600px) {
+            .top-nav { padding: 0 14px; }
+            .nav-links { display: none; }
+            .main-content { padding: 16px 14px 48px; }
+            .ws-types-grid { grid-template-columns: 1fr 1fr; }
+            .stats-row { gap: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ══════════ TOP NAVIGATION ══════════ -->
+    <nav class="top-nav">
+        <a href="/" class="nav-brand">📋 Worksheet Creator</a>
+        <div class="nav-links">
+            <a href="/" class="nav-link active">🏠 Dashboard</a>
+            <a href="/admin" class="nav-link">📋 My Worksheets</a>
+            <a href="/public-exercises" class="nav-link">🌐 Community</a>
+            <a href="/vocabulary" class="nav-link">📖 Vocabulary</a>
+            <a href="/lesson-assistant" class="nav-link">🖨️ PDF</a>
+        </div>
+        <div class="nav-actions">
+            <a href="/vocabulary" class="btn-create-new">+ Create New</a>
+            <button class="user-menu-btn" onclick="openUserModal()">
+                <div class="user-avatar"><span id="nav-avatar-letter">?</span></div>
+                <span id="nav-username">...</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ══════════ USER MODAL ══════════ -->
+    <div id="user-modal">
+        <div class="modal-box">
+            <div style="font-size:2.5em; margin-bottom:12px;">👋</div>
+            <h2 id="user-modal-title" style="margin:0 0 8px; color:#1f2937;">Xush kelibsiz!</h2>
+            <p style="color:#6b7280; margin-bottom:22px; font-size:.92em; line-height:1.5;">
+                Ismingizni kiriting — shu nom orqali faqat siz o'z vocabulary va worksheetlaringizni ko'rasiz.
+            </p>
+            <input type="text" id="user-name-input" maxlength="50"
+                   placeholder="Ismingiz (masalan: Aziz)"
+                   onkeydown="if(event.key==='Enter') saveUserName()">
+            <button onclick="saveUserName()">✅ Tasdiqlash</button>
+        </div>
+    </div>
+
+    <!-- ══════════ MAIN CONTENT ══════════ -->
+    <main class="main-content">
+
+        <!-- Page header -->
+        <div class="page-header">
+            <h1>Welcome back, <span id="welcome-name">...</span> 👋</h1>
+            <p>Bugun yangi worksheet yaratish uchun ajoyib kun!</p>
+        </div>
+
+        <!-- Stats + Quick Action -->
+        <div class="top-cards">
+            <div class="activity-card">
+                <div class="activity-card-title">Your Activity</div>
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <div class="stat-icon blue">📄</div>
+                        <div>
+                            <div class="stat-value" id="ws-count">—</div>
+                            <div class="stat-label">Worksheets created</div>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon purple">🌐</div>
+                        <div>
+                            <div class="stat-value" id="public-count">—</div>
+                            <div class="stat-label">Umumiy ulashilgan</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="quick-action-card">
+                <div>
+                    <div class="quick-action-label">Quick Action</div>
+                    <a href="/vocabulary" class="btn-quick-action">+ Create Worksheet</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Worksheet Types -->
+        <div class="ws-section">
+            <div class="section-title">✨ Yangi Worksheet Yaratish</div>
+            <div class="ws-types-grid">
+
+                <a href="/create/word_search" class="ws-type-card">
+                    <div class="ws-type-icon-wrap" style="background:#fff3e0;">🔍</div>
+                    <div>
+                        <div class="ws-type-name">Word Search</div>
+                        <div class="ws-type-desc">So'zlarni so'z izlash jadvalidan toping</div>
+                    </div>
+                </a>
+
+                <a href="/create/fill_gaps" class="ws-type-card">
+                    <div class="ws-type-icon-wrap" style="background:#e8f5e9;">✍️</div>
+                    <div>
+                        <div class="ws-type-name">Fill in the Gaps</div>
+                        <div class="ws-type-desc">Bo'sh harflarni to'ldirish mashqi</div>
+                    </div>
+                </a>
+
+                <a href="/create/matching" class="ws-type-card">
+                    <div class="ws-type-icon-wrap" style="background:#e3f2fd;">🔗</div>
+                    <div>
+                        <div class="ws-type-name">Matching</div>
+                        <div class="ws-type-desc">So'zlarni ta'riflari bilan moslashtirish</div>
+                    </div>
+                </a>
+
+                <a href="#" class="ws-type-card disabled" onclick="alert('Crossword tez kunda tayyor bo\'ladi! ⏳'); return false;">
+                    <div class="ws-type-icon-wrap" style="background:#fce4ec;">✚</div>
+                    <div>
+                        <div class="ws-type-name">Crossword</div>
+                        <div class="ws-type-desc">Tez kunda tayyor bo'ladi</div>
+                    </div>
+                    <span class="ws-badge badge-soon">Tez kunda</span>
+                </a>
+
+                <a href="#" class="ws-type-card disabled" onclick="alert('Domino tez kunda tayyor bo\'ladi! ⏳'); return false;">
+                    <div class="ws-type-icon-wrap" style="background:#fff8e1;">🁣</div>
+                    <div>
+                        <div class="ws-type-name">Domino</div>
+                        <div class="ws-type-desc">Tez kunda tayyor bo'ladi</div>
+                    </div>
+                    <span class="ws-badge badge-soon">Tez kunda</span>
+                </a>
+
+                <a href="#" class="ws-type-card disabled" onclick="alert('Find Pairings tez kunda tayyor bo\'ladi! ⏳'); return false;">
+                    <div class="ws-type-icon-wrap" style="background:#e0f7fa;">🃏</div>
+                    <div>
+                        <div class="ws-type-name">Find Pairings</div>
+                        <div class="ws-type-desc">Tez kunda tayyor bo'ladi</div>
+                    </div>
+                    <span class="ws-badge badge-soon">Tez kunda</span>
+                </a>
+
+            </div>
+        </div>
+
+        <!-- Recent Worksheets -->
+        <div class="recent-grid">
+            <div class="recent-card">
+                <div class="recent-card-header">
+                    <h3>Recent Worksheets</h3>
+                    <a href="/admin">Barchasini ko'rish →</a>
+                </div>
+                <div id="recent-mine"><div class="no-items">Yuklanmoqda...</div></div>
+            </div>
+            <div class="recent-card">
+                <div class="recent-card-header">
+                    <h3>Community Worksheets</h3>
+                    <a href="/public-exercises">Ko'rish →</a>
+                </div>
+                <div id="recent-community"><div class="no-items">Yuklanmoqda...</div></div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const TYPE_META = {
+            word_search:  { icon: '🔍', bg: '#fff3e0' },
+            fill_gaps:    { icon: '✍️', bg: '#e8f5e9' },
+            matching:     { icon: '🔗', bg: '#e3f2fd' },
+            crossword:    { icon: '✚', bg: '#fce4ec' },
+            domino:       { icon: '🁣', bg: '#fff8e1' },
+            find_pairings:{ icon: '🃏', bg: '#e0f7fa' }
+        };
+
+        function timeAgo(dateStr) {
+            const diff = Math.floor((new Date() - new Date(dateStr)) / 1000);
+            if (diff < 60)     return 'hozirgina';
+            if (diff < 3600)   return Math.floor(diff / 60) + ' daqiqa oldin';
+            if (diff < 86400)  return Math.floor(diff / 3600) + ' soat oldin';
+            if (diff < 604800) return Math.floor(diff / 86400) + ' kun oldin';
+            return Math.floor(diff / 604800) + ' hafta oldin';
+        }
+
+        function renderRecent(containerId, items, linkBase) {
+            const el = document.getElementById(containerId);
+            if (!items || !items.length) {
+                el.innerHTML = '<div class="no-items">Hali worksheet yo\'q</div>';
+                return;
+            }
+            el.innerHTML = items.slice(0, 4).map(ex => {
+                const m = TYPE_META[ex.type] || { icon: '📄', bg: '#f3f4f6' };
+                const title = ex.title || 'Nomsiz';
+                return `<a href="${linkBase}" class="recent-item">
+                    <div class="recent-item-icon" style="background:${m.bg}">${m.icon}</div>
+                    <div style="flex:1; min-width:0;">
+                        <div class="recent-title" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${title}</div>
+                        <div class="recent-meta">${timeAgo(ex.created_at)}</div>
+                    </div>
+                    <span class="recent-arrow">›</span>
+                </a>`;
+            }).join('');
+        }
+
+        async function checkUser() {
+            const res  = await fetch('/api/user');
+            const data = await res.json();
+            if (!data.logged_in) {
+                openUserModal(true);
+            } else {
+                setUserUI(data.username);
+            }
+        }
+
+        function setUserUI(name) {
+            document.getElementById('welcome-name').textContent       = name;
+            document.getElementById('nav-username').textContent       = name;
+            document.getElementById('nav-avatar-letter').textContent  = name.charAt(0).toUpperCase();
+        }
+
+        async function loadMyStats() {
+            try {
+                const res  = await fetch('/api/exercises');
+                const list = await res.json();
+                document.getElementById('ws-count').textContent     = list.length;
+                document.getElementById('public-count').textContent = list.filter(e => e.is_public).length;
+                renderRecent('recent-mine', list, '/admin');
+            } catch(e) {
+                document.getElementById('ws-count').textContent     = '0';
+                document.getElementById('public-count').textContent = '0';
+            }
+        }
+
+        async function loadCommunityRecent() {
+            try {
+                const res  = await fetch('/api/exercises/public');
+                const data = await res.json();
+                const list = Array.isArray(data) ? data : (data.exercises || []);
+                renderRecent('recent-community', list, '/public-exercises');
+            } catch(e) {
+                document.getElementById('recent-community').innerHTML =
+                    '<div class="no-items">Yuklab bo\'lmadi</div>';
+            }
+        }
+
+        function openUserModal(required = false) {
+            const modal = document.getElementById('user-modal');
+            modal.style.display = 'flex';
+            document.getElementById('user-modal-title').textContent =
+                required ? 'Xush kelibsiz!' : 'Ismni o\'zgartirish';
+            modal.onclick = required ? null : (e) => { if (e.target === modal) closeUserModal(); };
+            setTimeout(() => document.getElementById('user-name-input').focus(), 80);
+        }
+
+        function closeUserModal() {
+            document.getElementById('user-modal').style.display = 'none';
+        }
+
+        async function saveUserName() {
+            const name = document.getElementById('user-name-input').value.trim();
+            if (!name) {
+                document.getElementById('user-name-input').style.borderColor = '#ef4444';
+                document.getElementById('user-name-input').focus();
+                return;
+            }
+            const res  = await fetch('/api/user/set', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ username: name })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setUserUI(data.username);
+                closeUserModal();
+                loadMyStats();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkUser();
+            loadMyStats();
+            loadCommunityRecent();
+        });
+    </script>
+</body>
+</html>

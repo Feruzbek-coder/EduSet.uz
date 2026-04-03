@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hujjatlar – EduSet.uz</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ cache_version }}">
+    <style>
+        .hujjatlar-page { max-width: 900px; margin: 0 auto; padding: 32px 16px 80px; }
+        .hujjatlar-header { margin-bottom: 32px; }
+        .hujjatlar-header h1 { font-size: 2em; font-weight: 800; color: #2c3e50; margin: 0 0 8px; }
+        .hujjatlar-header p { color: #6b7280; font-size: 1em; margin: 0; }
+
+        .doc-section { margin-bottom: 36px; }
+        .doc-section-title {
+            font-size: 1.15em; font-weight: 700; color: #374151;
+            border-left: 4px solid #667eea; padding-left: 12px;
+            margin-bottom: 16px;
+        }
+        .doc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+        }
+        .doc-card {
+            background: #fff; border: 1.5px solid #e5e7eb; border-radius: 14px;
+            padding: 20px 18px; display: flex; align-items: flex-start; gap: 14px;
+            transition: box-shadow .2s, border-color .2s; cursor: pointer;
+            text-decoration: none; color: inherit;
+        }
+        .doc-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 18px rgba(102,126,234,.15);
+        }
+        .doc-icon {
+            font-size: 2em; flex-shrink: 0;
+            width: 48px; height: 48px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .doc-icon.pdf  { background: #fef2f2; }
+        .doc-icon.word { background: #eff6ff; }
+        .doc-icon.link { background: #f0fdf4; }
+        .doc-info { flex: 1; min-width: 0; }
+        .doc-name { font-weight: 700; color: #1f2937; font-size: .95em; margin-bottom: 4px; line-height: 1.35; }
+        .doc-desc { font-size: .82em; color: #6b7280; line-height: 1.4; }
+        .doc-badge {
+            display: inline-block; margin-top: 8px; padding: 2px 9px;
+            border-radius: 8px; font-size: .73em; font-weight: 700;
+        }
+        .badge-pdf  { background: #fee2e2; color: #b91c1c; }
+        .badge-word { background: #dbeafe; color: #1d4ed8; }
+        .badge-link { background: #dcfce7; color: #15803d; }
+
+        .coming-soon {
+            text-align: center; padding: 60px 20px; color: #9ca3af;
+            background: #f9fafb; border-radius: 16px; border: 2px dashed #e5e7eb;
+        }
+        .coming-soon .icon { font-size: 3.5em; margin-bottom: 14px; }
+        .coming-soon h3 { font-size: 1.2em; color: #6b7280; margin: 0 0 8px; font-weight: 700; }
+        .coming-soon p { font-size: .9em; margin: 0; }
+    </style>
+</head>
+<body>
+{% include '_nav.html' %}
+<div class="container hujjatlar-page">
+    <div class="hujjatlar-header">
+        <h1>📄 Me'yoriy hujjatlar</h1>
+        <p>Ta'lim tizimiga oid me'yoriy hujjatlar, dasturlar va uslubiy qo'llanmalar</p>
+    </div>
+
+    <div class="doc-section">
+        <div class="doc-section-title">📚 O'quv dasturlari</div>
+        <div class="coming-soon">
+            <div class="icon">🚧</div>
+            <h3>Tez kunda</h3>
+            <p>Hujjatlar bo'limi tayyorlanmoqda. Tez orada qo'llanmalar va me'yoriy hujjatlar qo'shiladi.</p>
+        </div>
+    </div>
+
+    <div class="doc-section">
+        <div class="doc-section-title">📋 Metodik qo'llanmalar</div>
+        <div class="coming-soon">
+            <div class="icon">📝</div>
+            <h3>Tez kunda</h3>
+            <p>Metodik qo'llanmalar va namuna dars rejalar bu yerda joylashtiriladi.</p>
+        </div>
+    </div>
+</div>
+
+{% include '_nav_js.html' %}
+</body>
+</html>
