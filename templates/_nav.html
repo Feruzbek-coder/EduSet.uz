@@ -1,6 +1,6 @@
 <!-- Test rejimi banneri -->
 <div class="test-banner">
-    🧪 Sayt <strong>test rejimida</strong> ishlamoqda — xato va takliflar uchun pastdagi tugmani bosing
+    🧪 Sayt <strong>test rejimida</strong> ishlamoqda
 </div>
 
 <nav class="top-nav">
@@ -52,8 +52,8 @@
 </div>
 
 <!-- Fikr-takliflar tugmasi -->
-<button class="feedback-fab" onclick="openFeedbackModal()" title="Fikr va taklif bildirish">
-    💬
+<button class="feedback-fab" onclick="openFeedbackModal()" title="Fikr va takliflar bildirish">
+    💬 Fikr va Takliflar bildirish
 </button>
 
 <!-- Fikr-takliflar modal -->
@@ -95,12 +95,12 @@
     position: fixed;
     bottom: 24px;
     left: 24px;
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
+    padding: 13px 22px;
+    border-radius: 12px;
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: #fff;
-    font-size: 1.4em;
+    font-size: .95em;
+    font-weight: 700;
     border: none;
     cursor: pointer;
     box-shadow: 0 4px 16px rgba(102,126,234,.5);
@@ -108,7 +108,9 @@
     transition: transform .2s, box-shadow .2s;
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 8px;
+    white-space: nowrap;
+    letter-spacing: .01em;
 }
 .feedback-fab:hover {
     transform: scale(1.1);

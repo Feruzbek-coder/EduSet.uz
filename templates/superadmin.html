@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel – EduSet.uz</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #f3f4f6; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+
+        .admin-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 16px 32px;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 4px 16px rgba(0,0,0,.15);
+        }
+        .admin-header h1 { color: #fff; font-size: 1.3em; font-weight: 800; }
+        .admin-header a { color: rgba(255,255,255,.85); text-decoration: none; font-size: .9em;
+                          padding: 7px 16px; border: 1.5px solid rgba(255,255,255,.5);
+                          border-radius: 8px; transition: background .2s; }
+        .admin-header a:hover { background: rgba(255,255,255,.15); }
+
+        .admin-content { max-width: 1100px; margin: 0 auto; padding: 28px 16px 60px; }
+
+        .stats-row { display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+        .stat-card { background: #fff; border-radius: 14px; padding: 18px 24px;
+                     box-shadow: 0 2px 8px rgba(0,0,0,.07); flex: 1; min-width: 140px; }
+        .stat-card .num { font-size: 2em; font-weight: 800; color: #667eea; }
+        .stat-card .lbl { font-size: .85em; color: #6b7280; margin-top: 4px; }
+
+        .section-title {
+            font-size: 1.1em; font-weight: 800; color: #374151;
+            border-left: 4px solid #667eea; padding-left: 12px; margin-bottom: 16px;
+        }
+
+        .feedback-table { width: 100%; border-collapse: collapse; background: #fff;
+                          border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.07); }
+        .feedback-table th { background: #667eea; color: #fff; padding: 12px 14px;
+                             text-align: left; font-size: .88em; font-weight: 700; }
+        .feedback-table td { padding: 12px 14px; border-bottom: 1px solid #f3f4f6; font-size: .9em; vertical-align: top; }
+        .feedback-table tr:last-child td { border-bottom: none; }
+        .feedback-table tr:hover td { background: #f9fafb; }
+
+        .type-pill { display: inline-block; padding: 3px 10px; border-radius: 10px; font-size: .78em; font-weight: 700; }
+        .type-taklif  { background: #dbeafe; color: #1d4ed8; }
+        .type-xato    { background: #fee2e2; color: #b91c1c; }
+        .type-savol   { background: #fef9c3; color: #92400e; }
+        .type-maqtov  { background: #dcfce7; color: #166534; }
+
+        .btn-delete { background: #fee2e2; color: #b91c1c; border: none; padding: 5px 12px;
+                      border-radius: 8px; cursor: pointer; font-size: .82em; font-weight: 700;
+                      transition: background .2s; }
+        .btn-delete:hover { background: #fecaca; }
+
+        .empty-msg { text-align: center; padding: 40px; color: #9ca3af; font-size: .95em; }
+
+        .exercises-section { margin-top: 36px; }
+        .ex-table { width: 100%; border-collapse: collapse; background: #fff;
+                    border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.07); }
+        .ex-table th { background: #764ba2; color: #fff; padding: 11px 14px; text-align: left; font-size: .88em; }
+        .ex-table td { padding: 11px 14px; border-bottom: 1px solid #f3f4f6; font-size: .88em; }
+        .ex-table tr:last-child td { border-bottom: none; }
+    </style>
+</head>
+<body>
+<div class="admin-header">
+    <h1>🛡️ EduSet Admin Panel</h1>
+    <a href="/superadmin/logout">🚪 Chiqish</a>
+</div>
+
+<div class="admin-content">
+
+    <!-- Statistika -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="num">{{ feedbacks|length }}</div>
+            <div class="lbl">Fikr-takliflar</div>
+        </div>
+        <div class="stat-card">
+            <div class="num">{{ feedbacks|selectattr('type','equalto','xato')|list|length }}</div>
+            <div class="lbl">Xato bildirimlari</div>
+        </div>
+        <div class="stat-card">
+            <div class="num">{{ exercises|length }}</div>
+            <div class="lbl">Jami ko'rgazmalar</div>
+        </div>
+        <div class="stat-card">
+            <div class="num">{{ exercises|selectattr('is_public')|list|length }}</div>
+            <div class="lbl">Umumiy ko'rgazmalar</div>
+        </div>
+    </div>
+
+    <!-- Fikr-takliflar -->
+    <div class="section-title">💬 Foydalanuvchi fikr va takliflari</div>
+    {% if feedbacks %}
+    <table class="feedback-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Tur</th>
+                <th>Foydalanuvchi</th>
+                <th>Sahifa</th>
+                <th>Matn</th>
+                <th>Vaqt</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fb in feedbacks %}
+            <tr>
+                <td style="color:#9ca3af;">{{ fb.id }}</td>
+                <td>
+                    <span class="type-pill type-{{ fb.type }}">
+                        {% if fb.type == 'taklif' %}💡 Taklif
+                        {% elif fb.type == 'xato' %}🐛 Xato
+                        {% elif fb.type == 'savol' %}❓ Savol
+                        {% elif fb.type == 'maqtov' %}⭐ Maqtov
+                        {% else %}{{ fb.type }}{% endif %}
+                    </span>
+                </td>
+                <td>{{ fb.username or '—' }}</td>
+                <td style="color:#6b7280; font-size:.82em;">{{ fb.page or '—' }}</td>
+                <td style="max-width:320px;">{{ fb.text }}</td>
+                <td style="color:#9ca3af; font-size:.82em; white-space:nowrap;">{{ fb.created_at[:16] }}</td>
+                <td>
+                    <form method="POST" action="/superadmin/delete-feedback/{{ fb.id }}"
+                          onsubmit="return confirm('O\'chirib tashlansinmi?')">
+                        <button type="submit" class="btn-delete">🗑️</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-msg">Hali fikr-takliflar yo'q</div>
+    {% endif %}
+
+    <!-- Ko'rgazmalar ro'yxati -->
+    <div class="exercises-section">
+        <div class="section-title">📋 Barcha ko'rgazmalar</div>
+        <table class="ex-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Sarlavha</th>
+                    <th>Tur</th>
+                    <th>Fan</th>
+                    <th>Sinf</th>
+                    <th>Holat</th>
+                    <th>Sana</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ex in exercises %}
+                <tr>
+                    <td style="color:#9ca3af;">{{ ex.id }}</td>
+                    <td><a href="/exercise/{{ ex.id }}" target="_blank" style="color:#667eea; text-decoration:none;">{{ ex.title }}</a></td>
+                    <td>{{ ex.type }}</td>
+                    <td>{{ ex.subject or '—' }}</td>
+                    <td>{{ ex.grade or '—' }}</td>
+                    <td>
+                        {% if ex.is_public %}
+                        <span style="color:#16a34a; font-weight:700;">🌐 Umumiy</span>
+                        {% else %}
+                        <span style="color:#6b7280;">🔒 Shaxsiy</span>
+                        {% endif %}
+                    </td>
+                    <td style="color:#9ca3af; font-size:.82em;">{{ ex.created_at[:10] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>

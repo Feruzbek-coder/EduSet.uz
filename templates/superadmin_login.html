@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login – EduSet.uz</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;
+               display: flex; align-items: center; justify-content: center; font-family: 'Segoe UI', sans-serif; }
+        .login-card {
+            background: #fff; border-radius: 20px; padding: 40px 36px 32px;
+            max-width: 380px; width: 94%; box-shadow: 0 20px 60px rgba(0,0,0,.25);
+        }
+        .login-icon { font-size: 2.8em; text-align: center; margin-bottom: 10px; }
+        h1 { text-align: center; color: #1f2937; font-size: 1.4em; margin-bottom: 6px; }
+        .subtitle { text-align: center; color: #6b7280; font-size: .85em; margin-bottom: 28px; }
+        label { display: block; font-size: .88em; font-weight: 600; color: #374151; margin-bottom: 6px; }
+        input { width: 100%; padding: 11px 14px; border: 2px solid #e5e7eb; border-radius: 10px;
+                font-size: .95em; margin-bottom: 18px; outline: none; transition: border-color .2s; }
+        input:focus { border-color: #667eea; }
+        .error { background: #fef2f2; color: #b91c1c; border-radius: 10px; padding: 10px 14px;
+                 font-size: .88em; margin-bottom: 16px; border: 1px solid #fecaca; }
+        button { width: 100%; padding: 13px; border: none; border-radius: 12px;
+                 background: linear-gradient(135deg, #667eea, #764ba2); color: #fff;
+                 font-size: 1em; font-weight: 700; cursor: pointer; transition: opacity .2s; }
+        button:hover { opacity: .9; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="login-icon">🔐</div>
+        <h1>Admin Panel</h1>
+        <p class="subtitle">EduSet.uz boshqaruv paneli</p>
+        {% if error %}
+        <div class="error">⚠️ {{ error }}</div>
+        {% endif %}
+        <form method="POST">
+            <label>Login</label>
+            <input type="text" name="login" placeholder="Admin logini" autocomplete="off" required>
+            <label>Parol</label>
+            <input type="password" name="password" placeholder="Parol" required>
+            <button type="submit">🔓 Kirish</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -98,6 +98,24 @@ class DatabaseManager:
         )
         conn.commit()
         conn.close()
+
+    def get_all_feedback(self):
+        """Barcha fikr-takliflarni olish (admin uchun)"""
+        conn = sqlite3.connect(self.db_name)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM feedback ORDER BY created_at DESC')
+        rows = cursor.fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
+
+    def delete_feedback(self, feedback_id):
+        """Bitta fikrni o'chirish"""
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM feedback WHERE id = ?', (feedback_id,))
+        conn.commit()
+        conn.close()
     
     def save_exercise(self, title, exercise_type, content, user_id=None, is_public=0, grade='', subject=''):
         """Mashqni saqlash"""

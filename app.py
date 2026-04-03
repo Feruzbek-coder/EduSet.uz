@@ -161,11 +161,15 @@ template_folder = os.path.join(base_path, 'templates')
 static_folder = os.path.join(base_path, 'static')
 
 app = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
-app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # Keshni o'chirish
-app.config['TEMPLATES_AUTO_RELOAD'] = True  # Template keshini o'chirish
-app.config['SECRET_KEY'] = 'worksheetcreator-secret-2024'
-app.jinja_env.auto_reload = True  # Jinja auto reload
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'worksheetcreator-secret-2024')
+app.jinja_env.auto_reload = True
 db = DatabaseManager()
+
+# Superadmin credentials (env orqali o'zgartirish mumkin)
+SUPERADMIN_LOGIN = os.environ.get('SUPERADMIN_LOGIN', 'eduset_admin')
+SUPERADMIN_PASSWORD = os.environ.get('SUPERADMIN_PASSWORD', 'EduSet@2026!')
 
 # PDF shriftlarini ro'yxatdan o'tkazish
 try:
@@ -1578,6 +1582,51 @@ def check_answer():
         'score': round(score, 1),
         'results': results
     })
+
+
+# ─── Superadmin panel ────────────────────────────────────────────────────────
+
+def superadmin_required(f):
+    """Superadmin login tekshiruvi decorator"""
+    from functools import wraps
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get('superadmin_logged_in'):
+            return redirect(url_for('superadmin_login'))
+        return f(*args, **kwargs)
+    return decorated
+
+@app.route('/superadmin/login', methods=['GET', 'POST'])
+def superadmin_login():
+    error = None
+    if request.method == 'POST':
+        login = request.form.get('login', '').strip()
+        password = request.form.get('password', '')
+        if login == SUPERADMIN_LOGIN and password == SUPERADMIN_PASSWORD:
+            session['superadmin_logged_in'] = True
+            return redirect(url_for('superadmin_dashboard'))
+        else:
+            error = "Login yoki parol noto'g'ri"
+    return render_template('superadmin_login.html', error=error)
+
+@app.route('/superadmin/logout')
+def superadmin_logout():
+    session.pop('superadmin_logged_in', None)
+    return redirect(url_for('superadmin_login'))
+
+@app.route('/superadmin')
+@superadmin_required
+def superadmin_dashboard():
+    feedbacks = db.get_all_feedback()
+    exercises = db.get_all_exercises()
+    return render_template('superadmin.html', feedbacks=feedbacks, exercises=exercises)
+
+@app.route('/superadmin/delete-feedback/<int:feedback_id>', methods=['POST'])
+@superadmin_required
+def superadmin_delete_feedback(feedback_id):
+    db.delete_feedback(feedback_id)
+    return redirect(url_for('superadmin_dashboard'))
+
 
 if __name__ == '__main__':
     import argparse
