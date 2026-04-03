@@ -72,7 +72,30 @@ class DatabaseManager:
             cursor.execute('ALTER TABLE exercises ADD COLUMN subject TEXT DEFAULT ""')
         except Exception:
             pass
+
+        # Feedback jadvali
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS feedback (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                type TEXT NOT NULL,
+                text TEXT NOT NULL,
+                page TEXT,
+                username TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
         
+        conn.commit()
+        conn.close()
+
+    def save_feedback(self, feedback_type, text, page='', username=''):
+        """Foydalanuvchi fikr-taklifini saqlash"""
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
+        cursor.execute(
+            'INSERT INTO feedback (type, text, page, username) VALUES (?, ?, ?, ?)',
+            (feedback_type, text, page, username)
+        )
         conn.commit()
         conn.close()
     

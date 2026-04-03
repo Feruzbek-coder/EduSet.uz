@@ -45,3 +45,44 @@ async function saveUserName() {
 }
 document.addEventListener('DOMContentLoaded', checkUser);
 </script>
+<script>
+function openFeedbackModal() {
+    document.getElementById('feedback-text').value = '';
+    document.getElementById('feedback-success').style.display = 'none';
+    document.getElementById('feedback-submit-btn').style.display = 'block';
+    const m = document.getElementById('feedback-modal');
+    m.style.display = 'flex';
+    setTimeout(() => document.getElementById('feedback-text').focus(), 80);
+}
+function closeFeedbackModal() {
+    document.getElementById('feedback-modal').style.display = 'none';
+}
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('feedback-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeFeedbackModal();
+    });
+});
+async function submitFeedback() {
+    const text = document.getElementById('feedback-text').value.trim();
+    const type = document.getElementById('feedback-type').value;
+    if (!text) {
+        document.getElementById('feedback-text').style.borderColor = '#ef4444';
+        document.getElementById('feedback-text').focus();
+        return;
+    }
+    document.getElementById('feedback-text').style.borderColor = '#e5e7eb';
+    const btn = document.getElementById('feedback-submit-btn');
+    btn.textContent = '⏳ Yuborilmoqda...';
+    btn.disabled = true;
+    try {
+        await fetch('/api/feedback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type, text, page: window.location.pathname })
+        });
+    } catch(e) {}
+    btn.style.display = 'none';
+    document.getElementById('feedback-success').style.display = 'block';
+    setTimeout(closeFeedbackModal, 2000);
+}
+</script>

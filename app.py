@@ -471,20 +471,34 @@ def _normalize_apostrophe(text):
     return text
 
 
+@app.route('/api/feedback', methods=['POST'])
+def submit_feedback():
+    """Foydalanuvchi fikr-taklifini saqlash"""
+    data = request.json or {}
+    feedback_type = data.get('type', 'taklif')[:50]
+    text = data.get('text', '')[:1000].strip()
+    page = data.get('page', '')[:200]
+    username = get_current_username()
+    if text:
+        db.save_feedback(feedback_type, text, page, username)
+    return jsonify({'success': True})
+
+
 @app.route('/api/generate-pdf', methods=['POST'])
 def generate_pdf():
     """Tanlangan mashqlardan PDF yaratish"""
-    data = request.json
-    exercise_ids = data.get('exercise_ids', [])
-    
-    if not exercise_ids:
-        return jsonify({'error': 'Mashqlar tanlanmagan'}), 400
-    
-    # PDF yaratish
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4,
-                           leftMargin=5*mm, rightMargin=5*mm,
-                           topMargin=5*mm, bottomMargin=5*mm)
+    try:
+        data = request.json
+        exercise_ids = data.get('exercise_ids', [])
+
+        if not exercise_ids:
+            return jsonify({'error': 'Mashqlar tanlanmagan'}), 400
+
+        # PDF yaratish
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4,
+                               leftMargin=5*mm, rightMargin=5*mm,
+                               topMargin=5*mm, bottomMargin=5*mm)
     
     elements = []
     styles = getSampleStyleSheet()
@@ -574,11 +588,15 @@ def generate_pdf():
         if i < len(exercise_ids) - 1:
             elements.append(PageBreak())
     
-    doc.build(elements, onFirstPage=add_footer, onLaterPages=add_footer)
-    buffer.seek(0)
-    
-    return send_file(buffer, mimetype='application/pdf',
-                     as_attachment=True, download_name='mashqlar.pdf')
+        doc.build(elements, onFirstPage=add_footer, onLaterPages=add_footer)
+        buffer.seek(0)
+
+        return send_file(buffer, mimetype='application/pdf',
+                         as_attachment=True, download_name='mashqlar.pdf')
+    except Exception as e:
+        import traceback
+        print("PDF xatolik:", traceback.format_exc())
+        return jsonify({'error': f'PDF yaratishda xatolik: {str(e)}'}), 500
 
 
 def _build_pdf_elements(exercise_ids, pdf_options, styles):

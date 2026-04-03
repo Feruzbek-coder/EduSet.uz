@@ -455,7 +455,11 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ exercise_ids: ids, pdf_options: opts })
                 });
-                if (!response.ok) { alert('Xatolik yuz berdi!'); return; }
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    alert('PDF xatolik: ' + (err.error || response.statusText));
+                    return;
+                }
                 const blob = await response.blob();
                 const url  = URL.createObjectURL(blob);
                 const a    = document.createElement('a');
@@ -520,7 +524,8 @@
                     document.getElementById('pdfViewer').src = url;
                     document.getElementById('pdfModal').classList.add('active');
                 } else {
-                    alert('PDF yaratishda xatolik yuz berdi!');
+                    const err = await response.json().catch(() => ({}));
+                    alert('PDF xatolik: ' + (err.error || response.statusText));
                 }
             } catch (error) {
                 console.error('Error:', error);
