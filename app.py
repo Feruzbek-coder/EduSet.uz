@@ -172,29 +172,32 @@ SUPERADMIN_LOGIN = os.environ.get('SUPERADMIN_LOGIN', 'eduset_admin')
 SUPERADMIN_PASSWORD = os.environ.get('SUPERADMIN_PASSWORD', 'EduSet@2026!')
 
 # PDF shriftlarini ro'yxatdan o'tkazish
+# Railway (Linux) da Windows shriftlari yo'q — qaysi shriftlar ro'yxatga olindi kuzatiladi
+_REGISTERED_SITKA = False
+_REGISTERED_CAMBRIA = False
+
 try:
-    # Windows shriftlar papkasi
     fonts_path = 'C:/Windows/Fonts'
-    
-    # Sitka Small Semibold
+
     sitka_path = os.path.join(fonts_path, 'SitkaSmall.ttc')
     if os.path.exists(sitka_path):
-        pdfmetrics.registerFont(TTFont('SitkaSmall', sitka_path, subfontIndex=1))  # Semibold
+        pdfmetrics.registerFont(TTFont('SitkaSmall', sitka_path, subfontIndex=1))
+        _REGISTERED_SITKA = True
     else:
-        # Alternativ - Georgia Bold
         georgia_path = os.path.join(fonts_path, 'georgiab.ttf')
         if os.path.exists(georgia_path):
             pdfmetrics.registerFont(TTFont('SitkaSmall', georgia_path))
-    
-    # Cambria Bold Italic
+            _REGISTERED_SITKA = True
+
     cambria_path = os.path.join(fonts_path, 'cambriaBI.ttf')
     if os.path.exists(cambria_path):
         pdfmetrics.registerFont(TTFont('CambriaBoldItalic', cambria_path))
+        _REGISTERED_CAMBRIA = True
     else:
-        # Alternativ - Times Bold Italic
         cambria_path = os.path.join(fonts_path, 'timesbi.ttf')
         if os.path.exists(cambria_path):
             pdfmetrics.registerFont(TTFont('CambriaBoldItalic', cambria_path))
+            _REGISTERED_CAMBRIA = True
 except Exception as e:
     print(f"Shrift ro'yxatdan o'tkazishda xatolik: {e}")
 
@@ -768,11 +771,14 @@ def generate_domino_pdf(exercise, content):
 
 
 # Mavjud shrift nomlari (pdf uchun)
+# Agar Windows shriftlari ro'yxatga olinmagan bo'lsa (Railway/Linux) — built-in shriftlar ishlatiladi
 WS_FONTS = {
-    'times':     ('Times-BoldItalic', 'Times-Bold'),
+    'times':     ('Times-BoldItalic',      'Times-Bold'),
     'helvetica': ('Helvetica-BoldOblique', 'Helvetica-Bold'),
-    'cambria':   ('CambriaBoldItalic', 'CambriaBoldItalic'),
-    'sitka':     ('SitkaSmall', 'SitkaSmall'),
+    'cambria':   ('CambriaBoldItalic'  if _REGISTERED_CAMBRIA else 'Times-BoldItalic',
+                  'CambriaBoldItalic'  if _REGISTERED_CAMBRIA else 'Times-Bold'),
+    'sitka':     ('SitkaSmall'         if _REGISTERED_SITKA   else 'Helvetica-Bold',
+                  'SitkaSmall'         if _REGISTERED_SITKA   else 'Helvetica-Bold'),
     'courier':   ('Courier-BoldOblique', 'Courier-Bold'),
 }
 
