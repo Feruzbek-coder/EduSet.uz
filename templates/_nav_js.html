@@ -1,13 +1,48 @@
 <script>
+// ── Foydalanuvchi nomi localStorage + server session da saqlanadi ─────────────
+// Telegram Mini App har ochilganda server session yo'qoladi, lekin
+// localStorage qoladi — shuning uchun avval localStorage ni tekshiramiz.
+
 async function checkUser() {
     const res = await fetch('/api/user');
     const data = await res.json();
-    if (!data.logged_in) {
-        openUserModal(true);
-    } else {
+
+    if (data.logged_in) {
+        // Server session bor — localStorage ni ham yangilab qo'yamiz
         _setNavUser(data.username);
+        localStorage.setItem('eduset_username', data.username);
+    } else {
+        // Server session yo'q — localStorage dan qarashamiz
+        const saved = localStorage.getItem('eduset_username');
+        if (saved) {
+            // Avtomatik tiklash — modal ko'rsatmasdan
+            await _autoRestoreUser(saved);
+        } else {
+            // Birinchi marta — ism so'raymiz
+            openUserModal(true);
+        }
     }
 }
+
+async function _autoRestoreUser(name) {
+    try {
+        const res = await fetch('/api/user/set', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: name })
+        });
+        const data = await res.json();
+        if (data.success) {
+            _setNavUser(data.username);
+            if (typeof onUserSet === 'function') onUserSet(data.username);
+        } else {
+            openUserModal(true);
+        }
+    } catch(e) {
+        openUserModal(true);
+    }
+}
+
 function _setNavUser(name) {
     const el1 = document.getElementById('nav-username');
     const el2 = document.getElementById('nav-avatar-letter');
@@ -38,6 +73,7 @@ async function saveUserName() {
     });
     const data = await res.json();
     if (data.success) {
+        localStorage.setItem('eduset_username', data.username);
         _setNavUser(data.username);
         document.getElementById('user-modal').style.display = 'none';
         if (typeof onUserSet === 'function') onUserSet(data.username);
