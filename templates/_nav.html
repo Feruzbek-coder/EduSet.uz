@@ -123,27 +123,30 @@
 }
 .feedback-fab {
     position: fixed;
-    bottom: 24px;
-    left: 24px;
-    padding: 13px 22px;
-    border-radius: 12px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    padding: 14px 22px;
+    border-radius: 0;
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: #fff;
-    font-size: .95em;
+    font-size: .97em;
     font-weight: 700;
     border: none;
     cursor: pointer;
-    box-shadow: 0 4px 16px rgba(102,126,234,.5);
-    z-index: 999;
-    transition: transform .2s, box-shadow .2s;
+    box-shadow: 0 -3px 16px rgba(102,126,234,.35);
+    z-index: 998;
+    transition: background .2s;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     white-space: nowrap;
     letter-spacing: .01em;
 }
 .feedback-fab:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 22px rgba(102,126,234,.65);
+    background: linear-gradient(135deg, #5a6fd6, #6a3d9a);
+    box-shadow: 0 -4px 20px rgba(102,126,234,.5);
 }
 </style>
