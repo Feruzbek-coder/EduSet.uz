@@ -35,7 +35,37 @@
             <span id="nav-username">...</span>
         </button>
     </div>
+    <!-- Hamburger (mobil uchun) -->
+    <button class="nav-hamburger" id="nav-hamburger-btn" onclick="toggleMobileMenu()" aria-label="Menyu">
+        <span></span><span></span><span></span>
+    </button>
 </nav>
+
+<!-- Mobil menyu overlay -->
+<div class="nav-mobile-menu" id="nav-mobile-menu" onclick="closeMobileMenuOnOverlay(event)">
+    <div class="nav-mobile-inner">
+        <a href="/" class="{% if active_page == 'home' %}active{% endif %}">🏠 Bosh sahifa</a>
+        <a href="/admin" class="{% if active_page == 'admin' %}active{% endif %}">📋 Mening ko'rgazmalarim</a>
+        <a href="/public-exercises" class="{% if active_page == 'community' %}active{% endif %}">🌐 Barcha ko'rgazmalar</a>
+        <a href="/hujjatlar" class="{% if active_page == 'hujjatlar' %}active{% endif %}">📄 Hujjatlar</a>
+        <div class="nav-mobile-divider">📚 Fanlar</div>
+        <div class="nav-mobile-sub">
+            <a href="/public-exercises?subject=Ingliz+tili">🇬🇧 Ingliz tili</a>
+            <a href="/public-exercises?subject=Matematika">📐 Matematika</a>
+            <a href="/public-exercises?subject=Ona+tili+va+adabiyot">📝 Ona tili va adabiyot</a>
+            <a href="/public-exercises?subject=Fizika">⚛️ Fizika</a>
+            <a href="/public-exercises?subject=Kimyo">🧪 Kimyo</a>
+            <a href="/public-exercises?subject=Biologiya">🌿 Biologiya</a>
+            <a href="/public-exercises?subject=Tarix">📜 Tarix</a>
+            <a href="/public-exercises?subject=Geografiya">🌍 Geografiya</a>
+            <a href="/public-exercises?subject=Informatika">💻 Informatika</a>
+            <a href="/public-exercises?subject=Musiqa">🎵 Musiqa</a>
+            <a href="/public-exercises?subject=Tasviriy+san%27at">🎨 Tasviriy san'at</a>
+            <a href="/public-exercises?subject=Jismoniy+tarbiya">⚽ Jismoniy tarbiya</a>
+            <a href="/public-exercises?subject=Boshqa">📦 Boshqa</a>
+        </div>
+    </div>
+</div>
 
 <div id="user-modal">
     <div class="modal-box">
